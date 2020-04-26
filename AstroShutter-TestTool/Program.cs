@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Threading;
+using System;
 using System.Collections.Generic;
 using AstroShutter.CliWrapper;
 
@@ -12,12 +13,23 @@ namespace AstroShutter_TestTool
 
             foreach (Camera cam in cams)
             {
-                Console.WriteLine($"{cam.model} at {cam.port} " + (!cam.isLocked ? $"battery {cam.batteryLevel}" : "device locked"));
+                Console.WriteLine($"################################ TEST Camera status ################################");
+                Console.WriteLine($"{cam.model}\n\tIsLocked: {cam.isLocked}\n\tIsConnected: {cam.Connected}\n\tPort: {cam.port}\n\tBattery level: {cam.batteryLevel}");
+
+                Console.WriteLine("Disconnect the camera to see changes...");
+                Thread.Sleep(5000);
+
+                Console.WriteLine($"{cam.model}\n\tIsLocked: {cam.isLocked}\n\tIsConnected: {cam.Connected}\n\tPort: {cam.port}\n\tBattery level: {cam.batteryLevel}");
+
+                Console.WriteLine("Reconnect the camera to continue...");
+                Thread.Sleep(15000);
+
+                Console.WriteLine($"################################ TEST Camera status ################################\n\n");
 
                 if (!cam.isLocked)
                 {
-                    testGetConfig(cam);
-                    testSetConfig(cam);
+                    testOptions(cam);
+                    testGetSet(cam);
                     testMisc(cam);
                 }
             }
@@ -36,29 +48,31 @@ namespace AstroShutter_TestTool
             Console.WriteLine($"################################ TEST misc CONFIG ################################");
         }
 
-        static void testSetConfig(Camera cam)
+        static void testGetSet(Camera cam)
         {
             Console.WriteLine($"################################ TEST get/set CONFIG ################################");
 
-            cam.captureTarget = CaptureTarget.MemoryCard;
+            cam.captureTarget = CaptureTarget.InternalRAM;
             cam.iso = 3200;
             cam.shutterSpeed = "1/50";
             cam.aspectRatio = "16:9";
             cam.aperture = 7.1;
+            cam.imageFormat = ImageFormat.TinyJPEG;
 
-            Console.WriteLine($"Current settings:\n\tISO {cam.iso}\n\tAperture {cam.aperture}\n\tShutter speed {cam.shutterSpeed}\n\tAspect ratio {cam.aspectRatio}\n\tCapture target {cam.captureTarget}");
+            Console.WriteLine($"Current settings:\n\tISO {cam.iso}\n\tAperture {cam.aperture}\n\tShutter speed {cam.shutterSpeed}\n\tAspect ratio {cam.aspectRatio}\n\tCapture target {cam.captureTarget}\n\tImage format {cam.imageFormat}");
 
-            cam.captureTarget = CaptureTarget.InternalRAM;
+            cam.captureTarget = CaptureTarget.MemoryCard;
             cam.iso = 800;
             cam.shutterSpeed = "1/10";
             cam.aspectRatio = "3:2";
             cam.aperture = 5.6;
+            cam.imageFormat = ImageFormat.RAWAndLargeFineJPEG;
             
-            Console.WriteLine($"Current settings:\n\tISO {cam.iso}\n\tAperture {cam.aperture}\n\tShutter speed {cam.shutterSpeed}\n\tAspect ratio {cam.aspectRatio}\n\tCapture target {cam.captureTarget}");
+            Console.WriteLine($"Current settings:\n\tISO {cam.iso}\n\tAperture {cam.aperture}\n\tShutter speed {cam.shutterSpeed}\n\tAspect ratio {cam.aspectRatio}\n\tCapture target {cam.captureTarget}\n\tImage format {cam.imageFormat}");
             Console.WriteLine($"################################ TEST get/set CONFIG ################################\n\n");
         }
 
-        static void testGetConfig(Camera cam)
+        static void testOptions(Camera cam)
         {
             Console.WriteLine($"################################ TEST options CONFIG ################################");
 
@@ -87,6 +101,13 @@ namespace AstroShutter_TestTool
             foreach (string ar in cam.aspectRatioOptions)
             {
                 Console.Write($"{ar}, ");
+            }
+            Console.WriteLine();
+
+            Console.Write("Image Formats: ");
+            foreach (string ifo in cam.imageFormatOptions)
+            {
+                Console.Write($"{ifo}, ");
             }
             Console.WriteLine();
             Console.WriteLine($"################################ TEST options CONFIG ################################\n\n");

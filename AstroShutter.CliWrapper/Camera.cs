@@ -18,6 +18,9 @@ namespace AstroShutter.CliWrapper
 
                 if (c != null)
                 {
+                    if (c.value is string)
+                        return 0d;
+                    
                     double bLevel = (double)c.value;
                     return bLevel / 100d;
                 }
@@ -25,6 +28,51 @@ namespace AstroShutter.CliWrapper
                     return 0;
             }
         }
+
+        public bool Connected 
+        {
+            get
+            {
+                List<string> output = Utilities.unixcmd("/usr/bin/gphoto2", $"--storage-info --port={port} -q").Split('\n').ToList();
+
+                foreach (string line in output)
+                {
+                    if (line.Contains("Could not claim the USB device") || line.Contains("*** Error: No camera found. ***"))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        public bool isLocked 
+        {
+            get
+            {
+                List<string> output = Utilities.unixcmd("/usr/bin/gphoto2", $"--storage-info --port={port} -q").Split('\n').ToList();
+
+                foreach (string line in output)
+                {
+                    if (line.Contains("Could not claim the USB device"))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        public List<string> imageFormatOptions
+        {
+            get
+            {
+                return getConfig("imageformat").options;
+            }
+        }
+
 
         public List<string> isoOptions
         {
@@ -55,6 +103,41 @@ namespace AstroShutter.CliWrapper
             get
             {
                 return getConfig("aspectratio").options;
+            }
+        }
+
+        public ImageFormat imageFormat
+        {
+            get
+            {
+                string v = (string)getConfig("imageformat").value;
+
+                if (v == "Large Fine JPEG")
+                    return ImageFormat.LargeFineJPEG;
+                else if (v == "Large Normal JPEG")
+                    return ImageFormat.LargeNormalJPEG;
+                else if (v == "Medium Fine JPEG")
+                    return ImageFormat.MediumFineJPEG;
+                else if (v == "Medium Normal JPEG")
+                    return ImageFormat.MediumNormalJPEG;
+                else if (v == "Small Fine JPEG")
+                    return ImageFormat.SmallFineJPEG;
+                else if (v == "Small Normal JPEG")
+                    return ImageFormat.SmallNormalJPEG;
+                else if (v == "Smaller JPEG")
+                    return ImageFormat.SmallerJPEG;
+                else if (v == "Tiny JPEG")
+                    return ImageFormat.TinyJPEG;
+                else if (v == "RAW + Large Fine JPEG")
+                    return ImageFormat.RAWAndLargeFineJPEG;
+                else if (v == "RAW")
+                    return ImageFormat.RAW;
+                else
+                    return ImageFormat.RAW;
+            }
+            set
+            {
+                setConfig("imageformat", ((int)value).ToString(), true);
             }
         }
 
@@ -121,14 +204,6 @@ namespace AstroShutter.CliWrapper
             set
             {
                 setConfig("capturetarget", ((int)value).ToString(), true);
-            }
-        }
-
-        public bool isLocked 
-        {
-            get
-            {
-                return batteryLevel == 0;
             }
         }
 
