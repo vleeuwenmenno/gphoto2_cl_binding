@@ -108,6 +108,22 @@ namespace AstroShutter.CliWrapper
             }
         }
 
+        public CaptureTarget captureTarget
+        {
+            get
+            {
+                string v = (string)getConfig("capturetarget").value;
+                if (v == "Memory card")
+                    return CaptureTarget.MemoryCard;
+                else
+                    return CaptureTarget.InternalRAM;
+            }
+            set
+            {
+                setConfig("capturetarget", ((int)value).ToString(), true);
+            }
+        }
+
         public bool isLocked 
         {
             get

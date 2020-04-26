@@ -24,4 +24,10 @@ namespace AstroShutter.CliWrapper
             return error + "\n" + output;
         }
     }
+
+    public enum CaptureTarget
+    {
+        InternalRAM = 0,
+        MemoryCard = 1
+    }
 }

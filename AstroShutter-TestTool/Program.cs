@@ -25,37 +25,42 @@ namespace AstroShutter_TestTool
 
         static void testMisc(Camera cam)
         {
+            Console.WriteLine($"################################ TEST misc CONFIG ################################");
+
             Console.WriteLine("Allowed config strings: ");
             foreach(string s in cam.listConfig())
             {
                 Console.WriteLine($"\t{s}");
             }
+
+            Console.WriteLine($"################################ TEST misc CONFIG ################################");
         }
 
         static void testSetConfig(Camera cam)
         {
-            Console.WriteLine($"################################ TEST set CONFIG ################################");
+            Console.WriteLine($"################################ TEST get/set CONFIG ################################");
 
+            cam.captureTarget = CaptureTarget.MemoryCard;
             cam.iso = 3200;
             cam.shutterSpeed = "1/50";
             cam.aspectRatio = "16:9";
             cam.aperture = 7.1;
 
-            Console.WriteLine($"Current settings:\n\tISO {cam.iso}\n\tAperture {cam.aperture}\n\tShutter speed {cam.shutterSpeed}\n\tAspect ratio {cam.aspectRatio}");
+            Console.WriteLine($"Current settings:\n\tISO {cam.iso}\n\tAperture {cam.aperture}\n\tShutter speed {cam.shutterSpeed}\n\tAspect ratio {cam.aspectRatio}\n\tCapture target {cam.captureTarget}");
 
+            cam.captureTarget = CaptureTarget.InternalRAM;
             cam.iso = 800;
             cam.shutterSpeed = "1/10";
             cam.aspectRatio = "3:2";
             cam.aperture = 5.6;
             
-            Console.WriteLine($"Current settings:\n\tISO {cam.iso}\n\tAperture {cam.aperture}\n\tShutter speed {cam.shutterSpeed}\n\tAspect ratio {cam.aspectRatio}");
-            Console.WriteLine($"################################ TEST set CONFIG ################################\n\n");
+            Console.WriteLine($"Current settings:\n\tISO {cam.iso}\n\tAperture {cam.aperture}\n\tShutter speed {cam.shutterSpeed}\n\tAspect ratio {cam.aspectRatio}\n\tCapture target {cam.captureTarget}");
+            Console.WriteLine($"################################ TEST get/set CONFIG ################################\n\n");
         }
 
         static void testGetConfig(Camera cam)
         {
-            Console.WriteLine($"################################ TEST get CONFIG ################################");
-            Console.WriteLine($"Current settings:\n\tISO {cam.iso}\n\tAperture {cam.aperture}\n\tShutter speed {cam.shutterSpeed}\n\tAspect ratio {cam.aspectRatio}");
+            Console.WriteLine($"################################ TEST options CONFIG ################################");
 
             Console.Write("Shutter speeds: ");
             foreach (string ss in cam.shutterSpeedOptions)
@@ -84,7 +89,7 @@ namespace AstroShutter_TestTool
                 Console.Write($"{ar}, ");
             }
             Console.WriteLine();
-            Console.WriteLine($"################################ TEST get CONFIG ################################\n\n");
+            Console.WriteLine($"################################ TEST options CONFIG ################################\n\n");
         }
     }
 }
