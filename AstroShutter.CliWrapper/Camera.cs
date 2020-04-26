@@ -72,6 +72,36 @@ namespace AstroShutter.CliWrapper
             }
         }
 
+        #region Capturing
+
+        public List<string> captureImage(int bulb = 0)
+        {
+            string args = "";
+
+            if (bulb > 0)
+                args = $"--port={port} --set-config eosremoterelease=2 --wait-event={bulb}s --set-config eosremoterelease=4 --wait-event=\"FILEADDED\"";
+            else
+                args = $"--port={port} --trigger-capture --wait-event=\"FILEADDED\"";
+
+            // If we have RAW and JPEG we need to wait for the event twice
+            if (imageFormat == ImageFormat.RAWAndLargeFineJPEG)
+                args += " --wait-event=\"FILEADDED\"";
+
+            List<string> output = Utilities.unixcmd("/usr/bin/gphoto2", args).Split('\n').ToList();
+            List<string> files = new List<string>();
+            output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+            foreach (string line in output)
+            {
+                if (line.StartsWith("FILEADDED "))
+                    files.Add(line.Replace("FILEADDED ", "").Split(' ')[1] + "/" + line.Replace("FILEADDED ", "").Split(' ')[0]);
+            }
+
+            return files;
+        }
+
+        #endregion
+
         #region File System
 
         public List<StorageInfo> storageInfo 

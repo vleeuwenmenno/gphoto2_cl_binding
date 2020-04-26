@@ -30,12 +30,52 @@ namespace AstroShutter_TestTool
 
                 if (!cam.isLocked)
                 {
-                    testFileSystem(cam);
+                    testCapture(cam);
+                    //testFileSystem(cam);
                     // testOptions(cam);
                     // testGetSet(cam);
                     // testMisc(cam);
                 }
             }
+        }
+
+        static void testCapture(Camera cam)
+        {
+            Console.WriteLine($"################################ TEST Capture ################################");
+
+            Console.WriteLine($"################### FAST 1/4000 ###################");
+
+            cam.shutterSpeed = "1/4000";
+
+            for (int i = 0; i < 5; i++)
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+
+                List<string> files = cam.captureImage();
+                                
+                watch.Stop();
+                var elapsedMs = watch.ElapsedMilliseconds;
+                
+                Console.WriteLine($"Capture {i+1} {files[0]} " + (files.Count > 1 ? files[1] : "") + $" took {elapsedMs}ms");
+            }
+
+            Console.WriteLine($"################### BULB 5s ###################");
+
+            cam.shutterSpeed = "bulb";
+
+            for (int i = 0; i < 5; i++)
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+
+                List<string> files = cam.captureImage(5);
+                                
+                watch.Stop();
+                var elapsedMs = watch.ElapsedMilliseconds;
+                
+                Console.WriteLine($"Capture {i+1} {files[0]} " + (files.Count > 1 ? files[1] : "") + $" took {elapsedMs}ms");
+            }
+
+            Console.WriteLine($"################################ TEST Capture ################################");
         }
 
         static void testFileSystem(Camera cam)
