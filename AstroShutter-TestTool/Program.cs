@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Linq;
+using System.Threading;
 using System;
 using System.Collections.Generic;
 using AstroShutter.CliWrapper;
@@ -16,23 +18,38 @@ namespace AstroShutter_TestTool
                 Console.WriteLine($"################################ TEST Camera status ################################");
                 Console.WriteLine($"{cam.model}\n\tIsLocked: {cam.isLocked}\n\tIsConnected: {cam.Connected}\n\tPort: {cam.port}\n\tBattery level: {cam.batteryLevel}");
 
-                Console.WriteLine("Disconnect the camera to see changes...");
-                Thread.Sleep(5000);
+                // Console.WriteLine("Disconnect the camera to see changes... waiting 5s...");
+                // Thread.Sleep(5000);
 
-                Console.WriteLine($"{cam.model}\n\tIsLocked: {cam.isLocked}\n\tIsConnected: {cam.Connected}\n\tPort: {cam.port}\n\tBattery level: {cam.batteryLevel}");
+                // Console.WriteLine($"{cam.model}\n\tIsLocked: {cam.isLocked}\n\tIsConnected: {cam.Connected}\n\tPort: {cam.port}\n\tBattery level: {cam.batteryLevel}");
 
-                Console.WriteLine("Reconnect the camera to continue...");
-                Thread.Sleep(15000);
+                // Console.WriteLine("Reconnect the camera to continue... waiting 15s...");
+                // Thread.Sleep(15000);
 
                 Console.WriteLine($"################################ TEST Camera status ################################\n\n");
 
                 if (!cam.isLocked)
                 {
-                    testOptions(cam);
-                    testGetSet(cam);
-                    testMisc(cam);
+                    testFileSystem(cam);
+                    // testOptions(cam);
+                    // testGetSet(cam);
+                    // testMisc(cam);
                 }
             }
+        }
+
+        static void testFileSystem(Camera cam)
+        {
+            Console.WriteLine($"################################ TEST File System ################################");
+
+            List<StorageInfo> info = cam.storageInfo;
+            
+            foreach (StorageInfo sinfo in info)
+            {
+                Console.WriteLine($"{sinfo.label}\n\tStorage type: {sinfo.desc}\n\tRoot: {sinfo.root}\n\tAccess rights: {sinfo.accessRights}\n\tType: {sinfo.type}\n\tFile system type: {sinfo.fileSystemType}\n\tCapacity: {Utilities.GetKBytesReadable(sinfo.capacity)}\n\tFree space: {Utilities.GetKBytesReadable(sinfo.free)}");
+            }
+
+            Console.WriteLine($"################################ TEST File System ################################\n\n");
         }
 
         static void testMisc(Camera cam)

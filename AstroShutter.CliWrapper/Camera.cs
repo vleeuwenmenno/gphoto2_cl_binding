@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace AstroShutter.CliWrapper
 {
@@ -9,6 +10,12 @@ namespace AstroShutter.CliWrapper
     {
         public string model { get; }
         public string port { get; }
+
+        public Camera(string m, string p)
+        {
+            model = m;
+            port = p;
+        }
 
         public double batteryLevel 
         {
@@ -65,6 +72,85 @@ namespace AstroShutter.CliWrapper
             }
         }
 
+        #region File System
+
+        public List<StorageInfo> storageInfo 
+        { 
+            get
+            {
+                List<string> output = Utilities.unixcmd("/usr/bin/gphoto2", $"--port={port} --storage-info -q").Split('\n').ToList();
+                output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+                List<StorageInfo> sinf = new List<StorageInfo>();
+                StorageInfo info = null;
+
+                foreach (string line in output)
+                {
+                    // If the line is a new storage label 
+                    if (line.StartsWith("[") && line.EndsWith("]"))
+                    {
+                        // Save the last one and prepare a new one
+                        if (info != null)
+                            sinf.Add(info);
+
+                        info = new StorageInfo();
+                        info.label = line.Replace("[", "").Replace("]", "");
+                        continue;
+                    }
+
+                    if (line.StartsWith("description="))
+                    {
+                        info.desc = line.Replace("description=", "");
+                        continue;
+                    }   
+                    else if (line.StartsWith("basedir="))
+                    {
+                        info.root = line.Replace("basedir=", "");
+                        continue;
+                    }  
+                    else if (line.StartsWith("access="))
+                    {
+                        info.accessRights = line.Replace("access=", "").Substring(2);
+                        continue;
+                    }   
+                    else if (line.StartsWith("type="))
+                    {
+                        info.type = line.Replace("type=", "").Substring(2);
+                        continue;
+                    }   
+                    else if (line.StartsWith("fstype="))
+                    {
+                        info.fileSystemType = line.Replace("fstype=", "").Substring(2);
+                        continue;
+                    }   
+                    else if (line.StartsWith("totalcapacity="))
+                    {
+                        info.capacity = long.Parse(line.Replace("totalcapacity=", "").Replace("KB", ""));
+                        continue;
+                    }   
+                    else if (line.StartsWith("free="))
+                    {
+                        info.free = long.Parse(line.Replace("free=", "").Replace("KB", ""));
+                        continue;
+                    }
+                    else
+                    {
+                        info.unknown += line;
+                        continue;
+                    }
+                }
+
+                // Add the last entry if it's not null
+                if (info != null)
+                    sinf.Add(info);
+
+                return sinf;
+            }
+        }
+    
+        #endregion
+
+        #region Available options lists
         public List<string> imageFormatOptions
         {
             get
@@ -72,7 +158,6 @@ namespace AstroShutter.CliWrapper
                 return getConfig("imageformat").options;
             }
         }
-
 
         public List<string> isoOptions
         {
@@ -106,6 +191,9 @@ namespace AstroShutter.CliWrapper
             }
         }
 
+        #endregion
+
+        #region Get/Set Options
         public ImageFormat imageFormat
         {
             get
@@ -140,7 +228,6 @@ namespace AstroShutter.CliWrapper
                 setConfig("imageformat", ((int)value).ToString(), true);
             }
         }
-
         public int iso
         {
             get
@@ -152,7 +239,6 @@ namespace AstroShutter.CliWrapper
                 setConfig("iso", value.ToString(), true);
             }
         }
-
 
         public double aperture
         {
@@ -207,11 +293,9 @@ namespace AstroShutter.CliWrapper
             }
         }
 
-        public Camera(string m, string p)
-        {
-            model = m;
-            port = p;
-        }
+        #endregion 
+
+        #region Advanced functions
 
         public List<string> listConfig()
         {
@@ -300,5 +384,7 @@ namespace AstroShutter.CliWrapper
 
             return new Config(label, ro, type, current, options);
         }
+
+        #endregion
     }
 }
