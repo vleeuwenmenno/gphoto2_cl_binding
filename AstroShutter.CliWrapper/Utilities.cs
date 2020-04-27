@@ -1,18 +1,45 @@
+using System.Net;
+using System.IO;
+using System;
+using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Threading;
 
 namespace AstroShutter.CliWrapper
 {
     public class Utilities
     {
-        public static string unixcmd(string binary, string args)
+        public static string gphoto2(string args)
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = binary, Arguments = args, }; 
+            ProcessStartInfo startInfo;
+            string random = "";
+            string binary = "";
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                random = new Random((int)((TimeSpan)(DateTime.UtcNow - new DateTime(1970, 1, 1))).TotalSeconds).Next(0, 10000).ToString();
+            
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                throw new NotImplementedException();
+            
+            else
+                binary = "/usr/bin/gphoto2";
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                startInfo = new ProcessStartInfo() { WorkingDirectory = Environment.CurrentDirectory, FileName = @"E:\MSYS2\usr\\bin\mintty.exe", Arguments = $"-w hide -l temp-{random} /bin/env MSYSTEM=MINGW64 /bin/bash -l -c 'gphoto2 {args}'" };
+            
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                throw new NotImplementedException();            
+            
+            else
+                startInfo = new ProcessStartInfo() { FileName = binary, Arguments = args, }; 
 
             Process process = new Process();
 
             startInfo.UseShellExecute = false;
             startInfo.RedirectStandardOutput = true;
             startInfo.RedirectStandardError = true;
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
             process.StartInfo = startInfo;
             process.Start();
 
@@ -20,8 +47,19 @@ namespace AstroShutter.CliWrapper
             string error = process.StandardError.ReadToEnd();
 
             process.WaitForExit();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                while (!File.Exists(Environment.CurrentDirectory + $"/temp-{random}") || File.Exists(Environment.CurrentDirectory + $"/temp-{random}") && Utilities.isFileLocked(new FileInfo(Environment.CurrentDirectory + $"/temp-{random}")))
+                {
+                    Thread.Sleep(100);
+                }
 
-            return error + "\n" + output;
+                output = File.ReadAllText(Environment.CurrentDirectory + $"/temp-{random}");
+                File.Delete(Environment.CurrentDirectory + $"/temp-{random}");
+                return output;
+            }
+            else
+                return error + "\n" + output;
         }
 
         public static string GetKBytesReadable(long ii)
@@ -71,6 +109,28 @@ namespace AstroShutter.CliWrapper
             readable = (readable / 1024);
             // Return formatted number with suffix
             return readable.ToString("0.### ") + suffix;
+        }
+
+        public static bool isFileLocked(FileInfo file)
+        {
+            try
+            {
+                using(FileStream stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.None))
+                {
+                    stream.Close();
+                }
+            }
+            catch (IOException)
+            {
+                //the file is unavailable because it is:
+                //still being written to
+                //or being processed by another thread
+                //or does not exist (has already been processed)
+                return true;
+            }
+
+            //file is not locked
+            return false;
         }
     }
 
