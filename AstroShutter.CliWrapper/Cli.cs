@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Runtime.InteropServices;
+using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -9,13 +10,16 @@ namespace AstroShutter.CliWrapper
     {
         public static List<Camera> AutoDetect()
         {
-            List<string> output = Utilities.unixcmd("/usr/bin/gphoto2", "--auto-detect").Split('\n').ToList();
-
-            //Remove first 2 lines as they only contain comments
-            output.RemoveRange(0, 3);
+            List<string> output = Utilities.gphoto2("--auto-detect").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n" }, StringSplitOptions.None).ToList();
 
             // Remove empty strings
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+            //Remove first 2 lines as they only contain comments
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                output.RemoveRange(0, 1);
+            
+            output.RemoveRange(0, 2);
 
             List<Camera> cameras = new List<Camera>();
             

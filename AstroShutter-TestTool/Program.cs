@@ -18,25 +18,27 @@ namespace AstroShutter_TestTool
                 Console.WriteLine($"################################ TEST Camera status ################################");
                 Console.WriteLine($"{cam.model}\n\tIsLocked: {cam.isLocked}\n\tIsConnected: {cam.Connected}\n\tPort: {cam.port}\n\tBattery level: {cam.batteryLevel}");
 
-                // Console.WriteLine("Disconnect the camera to see changes... waiting 5s...");
-                // Thread.Sleep(5000);
+                Console.WriteLine("Disconnect the camera to see changes... waiting 5s...");
+                Thread.Sleep(5000);
 
-                // Console.WriteLine($"{cam.model}\n\tIsLocked: {cam.isLocked}\n\tIsConnected: {cam.Connected}\n\tPort: {cam.port}\n\tBattery level: {cam.batteryLevel}");
+                Console.WriteLine($"{cam.model}\n\tIsLocked: {cam.isLocked}\n\tIsConnected: {cam.Connected}\n\tPort: {cam.port}\n\tBattery level: {cam.batteryLevel}");
 
-                // Console.WriteLine("Reconnect the camera to continue... waiting 15s...");
-                // Thread.Sleep(15000);
+                Console.WriteLine("Reconnect the camera to continue... waiting 5s...");
+                Thread.Sleep(5000);
 
                 Console.WriteLine($"################################ TEST Camera status ################################\n\n");
 
                 if (!cam.isLocked)
                 {
+                    testFileSystem(cam);
+                    testOptions(cam);
+                    testGetSet(cam);
+                    testMisc(cam);
                     testCapture(cam);
-                    //testFileSystem(cam);
-                    // testOptions(cam);
-                    // testGetSet(cam);
-                    // testMisc(cam);
                 }
             }
+
+            Console.ReadKey();
         }
 
         static void testCapture(Camera cam)

@@ -1,0 +1,8 @@
+[Storage 0]
+description=SD
+basedir=/store_00020001
+access=0 Read-Write
+type=4 Removable RAM
+fstype=4 Camera layout (DCIM)
+totalcapacity=124835840 KB
+free=124146560 KB

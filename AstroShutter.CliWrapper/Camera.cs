@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -40,7 +41,7 @@ namespace AstroShutter.CliWrapper
         {
             get
             {
-                List<string> output = Utilities.unixcmd("/usr/bin/gphoto2", $"--storage-info --port={port} -q").Split('\n').ToList();
+                List<string> output = Utilities.gphoto2($"--storage-info --port={port} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n" }, StringSplitOptions.None).ToList();
 
                 foreach (string line in output)
                 {
@@ -58,7 +59,7 @@ namespace AstroShutter.CliWrapper
         {
             get
             {
-                List<string> output = Utilities.unixcmd("/usr/bin/gphoto2", $"--storage-info --port={port} -q").Split('\n').ToList();
+                List<string> output = Utilities.gphoto2($"--storage-info --port={port} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n" }, StringSplitOptions.None).ToList();
 
                 foreach (string line in output)
                 {
@@ -87,7 +88,7 @@ namespace AstroShutter.CliWrapper
             if (imageFormat == ImageFormat.RAWAndLargeFineJPEG)
                 args += " --wait-event=\"FILEADDED\"";
 
-            List<string> output = Utilities.unixcmd("/usr/bin/gphoto2", args).Split('\n').ToList();
+            List<string> output = Utilities.gphoto2(args).Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n" }, StringSplitOptions.None).ToList();
             List<string> files = new List<string>();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
 
@@ -108,7 +109,7 @@ namespace AstroShutter.CliWrapper
         { 
             get
             {
-                List<string> output = Utilities.unixcmd("/usr/bin/gphoto2", $"--port={port} --storage-info -q").Split('\n').ToList();
+                List<string> output = Utilities.gphoto2($"--port={port} --storage-info -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
                 output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
 
                 List<StorageInfo> sinf = new List<StorageInfo>();
@@ -329,12 +330,12 @@ namespace AstroShutter.CliWrapper
 
         public List<string> listConfig()
         {
-            return Utilities.unixcmd("/usr/bin/gphoto2", $"--list-config --port={port} -q").Split('\n').ToList();
+            return Utilities.gphoto2($"--list-config --port={port} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n" }, StringSplitOptions.None).ToList();
         }
 
         public bool setConfig(string name, string value, bool dontCheck = false)
         {
-            List<string> output = Utilities.unixcmd("/usr/bin/gphoto2", $"--set-config {name}={value} --port={port} -q").Split('\n').ToList();
+            List<string> output = Utilities.gphoto2($"--set-config {name}={value} --port={port} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n" }, StringSplitOptions.None).ToList();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
             
             if (dontCheck)
@@ -355,7 +356,7 @@ namespace AstroShutter.CliWrapper
 
         public Config getConfig(string name)
         {
-            List<string> output = Utilities.unixcmd("/usr/bin/gphoto2", $"--get-config {name} --port={port} -q").Split('\n').ToList();
+            List<string> output = Utilities.gphoto2($"--get-config {name} --port={port} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n" }, StringSplitOptions.None).ToList();
 
             string label = "";
             bool ro = false;
