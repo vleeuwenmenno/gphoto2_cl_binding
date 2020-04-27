@@ -16,47 +16,35 @@ namespace AstroShutter.CliWrapper
             string binary = "";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
                 random = new Random((int)((TimeSpan)(DateTime.UtcNow - new DateTime(1970, 1, 1))).TotalSeconds).Next(0, 10000).ToString();
-                binary = $"E:\\MSYS2\\usr\\bin\\mintty.exe --nodaemon -w hide -l temp-{random} /bin/env MSYSTEM=MINGW64 /bin/bash -l -c 'gphoto2";
-            }
+            
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
                 throw new NotImplementedException();
-            }
+            
             else
                 binary = "/usr/bin/gphoto2";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {                
-                startInfo = new ProcessStartInfo() { WorkingDirectory = Environment.CurrentDirectory, FileName = @"CMD.exe", Arguments = "/C c: && cd \"" + Environment.CurrentDirectory + $"\" && {binary} {args}'", };
-            }
+                startInfo = new ProcessStartInfo() { WorkingDirectory = Environment.CurrentDirectory, FileName = @"E:\MSYS2\usr\\bin\mintty.exe", Arguments = $"-w hide -l temp-{random} /bin/env MSYSTEM=MINGW64 /bin/bash -l -c 'gphoto2 {args}'" };
+            
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 throw new NotImplementedException();            
+            
             else
                 startInfo = new ProcessStartInfo() { FileName = binary, Arguments = args, }; 
 
             Process process = new Process();
 
             startInfo.UseShellExecute = false;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                startInfo.RedirectStandardOutput = true;
-                startInfo.RedirectStandardError = true;
-            }
+            startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
             process.StartInfo = startInfo;
             process.Start();
 
-            string output = "";
-            string error = "";
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                output = process.StandardOutput.ReadToEnd();
-                error = process.StandardError.ReadToEnd();
-            }
+            string output = process.StandardOutput.ReadToEnd();
+            string error = process.StandardError.ReadToEnd();
 
             process.WaitForExit();
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

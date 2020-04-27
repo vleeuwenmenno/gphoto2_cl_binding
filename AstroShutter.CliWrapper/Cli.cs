@@ -10,7 +10,7 @@ namespace AstroShutter.CliWrapper
     {
         public static List<Camera> AutoDetect()
         {
-            List<string> output = Utilities.gphoto2("--auto-detect").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n" }, StringSplitOptions.None).ToList();
+            List<string> output = Utilities.gphoto2("--auto-detect").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
 
             // Remove empty strings
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
