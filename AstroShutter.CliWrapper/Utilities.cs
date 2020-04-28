@@ -17,7 +17,10 @@ namespace AstroShutter.CliWrapper
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 random = new Random((int)((TimeSpan)(DateTime.UtcNow - new DateTime(1970, 1, 1))).TotalSeconds).Next(0, 10000).ToString();
-                        
+            
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                binary = "/usr/local/bin/gphoto2";
+            
             else
                 binary = "/usr/bin/gphoto2";
 
