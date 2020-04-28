@@ -8,7 +8,7 @@ namespace AstroShutter.CliWrapper
 {
     public class CameraFileSystem
     {
-        public List<CameraFolder> fs { get; internal set; }
+        public List<CameraFile> fs { get; internal set; }
         public string path { get; internal set; }
 
         private string port { get; }
@@ -22,7 +22,7 @@ namespace AstroShutter.CliWrapper
 
         public void Refresh()
         {
-            fs = new List<CameraFolder>();
+            fs = new List<CameraFile>();
 
             List<string> allFolders = Utilities.gphoto2($"--port={port} --list-folders -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
             allFolders = allFolders.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
@@ -32,18 +32,17 @@ namespace AstroShutter.CliWrapper
 
             fs.Add(loadFolders(path, allFolders, allFiles));
 
-            foreach (CameraFolder o in fs)
+            foreach (CameraFile o in fs)
             {
                 Console.WriteLine(o.path);
             }
         }
 
-        CameraFolder loadFolders(string cwd, List<string> output, List<string> allFiles)
+        CameraFile loadFolders(string cwd, List<string> output, List<string> allFiles)
         {
-            CameraFolder folder = new CameraFolder(port);
+            CameraFile folder = new CameraFile(port);
 
             folder.path = cwd;
-            folder.children = new List<object>();
             folder.isFolder = true;
 
             foreach (string d in getDirectoriesInDirectory(cwd, output))

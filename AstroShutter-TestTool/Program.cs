@@ -87,7 +87,7 @@ namespace AstroShutter_TestTool
             
             foreach (StorageInfo sinfo in info)
             {
-                CameraFile f = (CameraFile)((CameraFolder)(CameraFolder)((CameraFolder)sinfo.root.fs[0].children[0]).children[0]).children[45]; //new CameraFile(sinfo.root, "/store_00020001/DCIM/100CANON/IMG_0622.CR2");
+                CameraFile f = CameraFile.Find(sinfo.root.fs[0], "/store_00020001/DCIM/100CANON/IMG_0622.CR2");
                 Console.WriteLine($"File read: \n\tFile name: {f.filename}\n\tPath: {f.path}\n\tSize: {Utilities.GetKBytesReadable(f.size /1024)}\n\tCreation time: {f.createdAt.ToLongTimeString()} {f.createdAt.ToLongDateString()}\n\tMime-type: {f.mimeType}");
 
                 Console.WriteLine($"{sinfo.label}\n\tStorage type: {sinfo.desc}\n\tRoot: {sinfo.root.path}\n\tAccess rights: {sinfo.accessRights}\n\tType: {sinfo.type}\n\tFile system type: {sinfo.fileSystemType}\n\tCapacity: {Utilities.GetKBytesReadable(sinfo.capacity)}\n\tFree space: {Utilities.GetKBytesReadable(sinfo.free)}");

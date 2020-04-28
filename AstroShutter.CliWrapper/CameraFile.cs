@@ -11,6 +11,9 @@ namespace AstroShutter.CliWrapper
     {
         public string path { get; internal set; }
         public bool isFolder { get; internal set; }
+        private string port { get; }
+        public List<CameraFile> children { get; internal set; }
+
         public string filename 
         { 
             get
@@ -125,14 +128,26 @@ namespace AstroShutter.CliWrapper
 
         public CameraFile(string port)
         {
+            children = new List<CameraFile>();
             this.port = port;
         }
 
-        public CameraFile(CameraFileSystem fs, string path)
+        public static CameraFile Find(CameraFile node, string path)
         {
-            
-        }
+            if (node == null)
+                return null;
 
-        private string port { get; }
+            if (node.path == path)
+                return node;
+
+            foreach (CameraFile child in node.children)
+            {
+                var found = Find(child, path);
+                if (found != null)
+                    return found;
+            }
+
+            return null;
+        }
     }
 }
