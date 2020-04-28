@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Net.Sockets;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System;
@@ -15,26 +16,26 @@ namespace AstroShutter_TestTool
 
             foreach (Camera cam in cams)
             {
-                Console.WriteLine($"################################ TEST Camera status ################################");
-                Console.WriteLine($"{cam.model}\n\tIsLocked: {cam.isLocked}\n\tIsConnected: {cam.Connected}\n\tPort: {cam.port}\n\tBattery level: {cam.batteryLevel}");
+                // Console.WriteLine($"################################ TEST Camera status ################################");
+                // Console.WriteLine($"{cam.model}\n\tIsLocked: {cam.isLocked}\n\tIsConnected: {cam.Connected}\n\tPort: {cam.port}\n\tBattery level: {cam.batteryLevel}");
 
-                Console.WriteLine("Disconnect the camera to see changes... waiting 5s...");
-                Thread.Sleep(5000);
+                // Console.WriteLine("Disconnect the camera to see changes... waiting 5s...");
+                // Thread.Sleep(5000);
 
-                Console.WriteLine($"{cam.model}\n\tIsLocked: {cam.isLocked}\n\tIsConnected: {cam.Connected}\n\tPort: {cam.port}\n\tBattery level: {cam.batteryLevel}");
+                // Console.WriteLine($"{cam.model}\n\tIsLocked: {cam.isLocked}\n\tIsConnected: {cam.Connected}\n\tPort: {cam.port}\n\tBattery level: {cam.batteryLevel}");
 
-                Console.WriteLine("Reconnect the camera to continue... waiting 5s...");
-                Thread.Sleep(5000);
+                // Console.WriteLine("Reconnect the camera to continue... waiting 5s...");
+                // Thread.Sleep(5000);
 
                 Console.WriteLine($"################################ TEST Camera status ################################\n\n");
 
                 if (!cam.isLocked)
                 {
                     testFileSystem(cam);
-                    testOptions(cam);
-                    testGetSet(cam);
-                    testMisc(cam);
-                    testCapture(cam);
+                    // testOptions(cam);
+                    // testGetSet(cam);
+                    // testMisc(cam);
+                    // testCapture(cam);
                 }
             }
         }
@@ -86,7 +87,10 @@ namespace AstroShutter_TestTool
             
             foreach (StorageInfo sinfo in info)
             {
-                Console.WriteLine($"{sinfo.label}\n\tStorage type: {sinfo.desc}\n\tRoot: {sinfo.root}\n\tAccess rights: {sinfo.accessRights}\n\tType: {sinfo.type}\n\tFile system type: {sinfo.fileSystemType}\n\tCapacity: {Utilities.GetKBytesReadable(sinfo.capacity)}\n\tFree space: {Utilities.GetKBytesReadable(sinfo.free)}");
+                CameraFile f = (CameraFile)((CameraFolder)(CameraFolder)((CameraFolder)sinfo.root.fs[0].children[0]).children[0]).children[45]; //new CameraFile(sinfo.root, "/store_00020001/DCIM/100CANON/IMG_0622.CR2");
+                Console.WriteLine($"File read: \n\tFile name: {f.filename}\n\tPath: {f.path}\n\tSize: {Utilities.GetKBytesReadable(f.size /1024)}\n\tCreation time: {f.createdAt.ToLongTimeString()} {f.createdAt.ToLongDateString()}\n\tMime-type: {f.mimeType}");
+
+                Console.WriteLine($"{sinfo.label}\n\tStorage type: {sinfo.desc}\n\tRoot: {sinfo.root.path}\n\tAccess rights: {sinfo.accessRights}\n\tType: {sinfo.type}\n\tFile system type: {sinfo.fileSystemType}\n\tCapacity: {Utilities.GetKBytesReadable(sinfo.capacity)}\n\tFree space: {Utilities.GetKBytesReadable(sinfo.free)}");
             }
 
             Console.WriteLine($"################################ TEST File System ################################\n\n");

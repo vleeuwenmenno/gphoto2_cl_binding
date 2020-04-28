@@ -136,7 +136,12 @@ namespace AstroShutter.CliWrapper
                     }   
                     else if (line.StartsWith("basedir="))
                     {
-                        info.root = line.Replace("basedir=", "");
+                        CameraFileSystem fs = new CameraFileSystem(port, info);
+
+                        fs.path = line.Replace("basedir=", "");
+                        fs.Refresh();
+
+                        info.root = fs;
                         continue;
                     }  
                     else if (line.StartsWith("access="))
