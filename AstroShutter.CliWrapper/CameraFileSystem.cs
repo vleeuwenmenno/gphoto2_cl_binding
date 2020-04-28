@@ -19,7 +19,10 @@ namespace AstroShutter.CliWrapper
             this.port = port;
             this.host = host;
         }
-
+        
+        /// <summary>
+        /// Reindex the file system
+        /// </summary>
         public void Refresh()
         {
             fs = new List<CameraFile>();
@@ -31,14 +34,9 @@ namespace AstroShutter.CliWrapper
             allFiles = allFiles.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
 
             fs.Add(loadFolders(path, allFolders, allFiles));
-
-            foreach (CameraFile o in fs)
-            {
-                Console.WriteLine(o.path);
-            }
         }
 
-        CameraFile loadFolders(string cwd, List<string> output, List<string> allFiles)
+        private CameraFile loadFolders(string cwd, List<string> output, List<string> allFiles)
         {
             CameraFile folder = new CameraFile(port);
 
@@ -88,31 +86,6 @@ namespace AstroShutter.CliWrapper
                     ret.Add(d);
             }
             return ret;
-        }
-
-        public bool exists(string path)
-        {
-            throw new NotImplementedException();
-        }        
-        
-        public CameraFile getFileInfo(string path)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void delete(string path)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void delete(List<CameraFile> path)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void delete(List<string> path)
-        {
-            throw new NotImplementedException();
         }
     }
 }

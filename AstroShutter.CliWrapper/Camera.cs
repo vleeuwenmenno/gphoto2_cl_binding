@@ -75,7 +75,7 @@ namespace AstroShutter.CliWrapper
 
         #region Capturing
 
-        public List<string> captureImage(int bulb = 0)
+        public List<CameraFile> captureImage(int bulb = 0)
         {
             string args = "";
 
@@ -89,13 +89,13 @@ namespace AstroShutter.CliWrapper
                 args += " --wait-event=\"FILEADDED\"";
 
             List<string> output = Utilities.gphoto2(args).Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
-            List<string> files = new List<string>();
+            List<CameraFile> files = new List<CameraFile>();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
 
             foreach (string line in output)
             {
                 if (line.StartsWith("FILEADDED "))
-                    files.Add(line.Replace("FILEADDED ", "").Split(' ')[1] + "/" + line.Replace("FILEADDED ", "").Split(' ')[0]);
+                    files.Add(CameraFile.Find(storageInfo[0].root.fs[0], line.Replace("FILEADDED ", "").Split(' ')[1] + "/" + line.Replace("FILEADDED ", "").Split(' ')[0]));
             }
 
             return files;

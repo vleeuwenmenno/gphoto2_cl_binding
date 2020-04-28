@@ -132,6 +132,53 @@ namespace AstroShutter.CliWrapper
             this.port = port;
         }
 
+        /// <summary>
+        /// Save the file to your computer
+        /// </summary>
+        /// <param name="localPath">The local path on your computer to download the image to</param>
+        public void Download(string localPath)
+        {
+            
+        }
+
+        /// <summary>
+        /// Delete the file from the 
+        /// </summary>
+        public void Delete()
+        {
+
+        }
+
+        /// <summary>
+        /// Get all file objects of files in a specified folder
+        /// </summary>
+        /// <param name="node">The root folder (or any subfolder you want to search in)</param>
+        /// <param name="path">The path of the folder relative to the node</param>
+        /// <returns></returns>
+        public static List<CameraFile> FindAll(CameraFile node, string path)
+        {
+            if (node == null)
+                return null;
+
+            if (node.path == path && node.isFolder)
+                return node.children;
+
+            foreach (CameraFile child in node.children)
+            {
+                var found = Find(child, path);
+                if (found != null && found.isFolder)
+                    return found.children;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get the file object from a path
+        /// </summary>
+        /// <param name="node">The root folder (or any subfolder you want to search in)</param>
+        /// <param name="path">The path to the file you are trying to retrieve</param>
+        /// <returns></returns>
         public static CameraFile Find(CameraFile node, string path)
         {
             if (node == null)

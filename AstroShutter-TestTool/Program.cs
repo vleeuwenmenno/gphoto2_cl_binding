@@ -52,12 +52,12 @@ namespace AstroShutter_TestTool
             {
                 var watch = System.Diagnostics.Stopwatch.StartNew();
 
-                List<string> files = cam.captureImage();
+                List<CameraFile> files = cam.captureImage();
                                 
                 watch.Stop();
                 var elapsedMs = watch.ElapsedMilliseconds;
                 
-                Console.WriteLine($"Capture {i+1} {files[0]} " + (files.Count > 1 ? files[1] : "") + $" took {elapsedMs}ms");
+                Console.WriteLine($"Capture {i+1} {files[0].filename} " + (files.Count > 1 ? files[1].filename : "") + $" took {elapsedMs}ms");
             }
 
             Console.WriteLine($"################### BULB 5s ###################");
@@ -68,12 +68,12 @@ namespace AstroShutter_TestTool
             {
                 var watch = System.Diagnostics.Stopwatch.StartNew();
 
-                List<string> files = cam.captureImage(5);
+                List<CameraFile> files = cam.captureImage(5);
                                 
                 watch.Stop();
                 var elapsedMs = watch.ElapsedMilliseconds;
                 
-                Console.WriteLine($"Capture {i+1} {files[0]} " + (files.Count > 1 ? files[1] : "") + $" took {elapsedMs}ms");
+                Console.WriteLine($"Capture {i+1} {files[0].filename} " + (files.Count > 1 ? files[1].filename : "") + $" took {elapsedMs}ms");
             }
 
             Console.WriteLine($"################################ TEST Capture ################################");
@@ -87,8 +87,14 @@ namespace AstroShutter_TestTool
             
             foreach (StorageInfo sinfo in info)
             {
-                CameraFile f = CameraFile.Find(sinfo.root.fs[0], "/store_00020001/DCIM/100CANON/IMG_0622.CR2");
-                Console.WriteLine($"File read: \n\tFile name: {f.filename}\n\tPath: {f.path}\n\tSize: {Utilities.GetKBytesReadable(f.size /1024)}\n\tCreation time: {f.createdAt.ToLongTimeString()} {f.createdAt.ToLongDateString()}\n\tMime-type: {f.mimeType}");
+                List<CameraFile> files = CameraFile.FindAll(sinfo.root.fs[0], "/store_00020001/DCIM/102CANON");
+                foreach (CameraFile f in files)
+                {
+                    Console.WriteLine($"File read: \n\tFile name: {f.filename}\n\tPath: {f.path}\n\tSize: {Utilities.GetKBytesReadable(f.size /1024)}\n\tCreation time: {f.createdAt.ToLongTimeString()} {f.createdAt.ToLongDateString()}\n\tMime-type: {f.mimeType}");
+                }
+
+                CameraFile ff = CameraFile.Find(sinfo.root.fs[0], "/store_00020001/DCIM/100CANON/IMG_0622.CR2");
+                Console.WriteLine($"File read: \n\tFile name: {ff.filename}\n\tPath: {ff.path}\n\tSize: {Utilities.GetKBytesReadable(ff.size /1024)}\n\tCreation time: {ff.createdAt.ToLongTimeString()} {ff.createdAt.ToLongDateString()}\n\tMime-type: {ff.mimeType}");
 
                 Console.WriteLine($"{sinfo.label}\n\tStorage type: {sinfo.desc}\n\tRoot: {sinfo.root.path}\n\tAccess rights: {sinfo.accessRights}\n\tType: {sinfo.type}\n\tFile system type: {sinfo.fileSystemType}\n\tCapacity: {Utilities.GetKBytesReadable(sinfo.capacity)}\n\tFree space: {Utilities.GetKBytesReadable(sinfo.free)}");
             }

@@ -73,7 +73,7 @@ Find out if your package manager has a source which can install gphoto2
  - [x] Capturing images in bulb mode (Also returns a list of files created)
  - [x] Checking if device is locked or is connected
  - [x] Read storage information (Capacity, storage type and free space left)
- - [ ] Listing files/folders
+ - [x] Listing files/folders
  - [ ] Deleting files (Single file/entire folder)
  - [ ] Downloading of files with specific methods (single file, range of files or entire folders)
  - Maybe more if you are in need of a feature please request it by making a new issue in the issue tracker
