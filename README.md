@@ -1,6 +1,6 @@
 # AstroShutter Cli wrapper
 
-This is a wrapper for gphoto2 CLI.
+This is a wrapper for gphoto2 CLI. (WARNING This classlib depends on gphoto2 command, not libgphoto2!)
 
 Currently it has been tested to work on the following platforms:
 
@@ -40,6 +40,7 @@ In `AstroShutter-TestTool/` is a fully working example of how to use this librar
 
 But a bare-bones example is as follows:
 
+ - Reference this library 
 ```csharp
     Camera cam = Cli.AutoDetect()[0];
 

@@ -17,18 +17,12 @@ namespace AstroShutter.CliWrapper
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 random = new Random((int)((TimeSpan)(DateTime.UtcNow - new DateTime(1970, 1, 1))).TotalSeconds).Next(0, 10000).ToString();
-            
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                throw new NotImplementedException();
-            
+                        
             else
                 binary = "/usr/bin/gphoto2";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 startInfo = new ProcessStartInfo() { WorkingDirectory = Environment.CurrentDirectory, FileName = @"E:\MSYS2\usr\\bin\mintty.exe", Arguments = $"-w hide -l temp-{random} /bin/env MSYSTEM=MINGW64 /bin/bash -l -c 'gphoto2 {args}'" };
-            
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                throw new NotImplementedException();            
             
             else
                 startInfo = new ProcessStartInfo() { FileName = binary, Arguments = args, }; 
