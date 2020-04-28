@@ -37,8 +37,6 @@ namespace AstroShutter_TestTool
                     testCapture(cam);
                 }
             }
-
-            Console.ReadKey();
         }
 
         static void testCapture(Camera cam)

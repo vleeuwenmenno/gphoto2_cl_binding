@@ -14,10 +14,6 @@ namespace AstroShutter.CliWrapper
 
             // Remove empty strings
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
-
-            //Remove first 2 lines as they only contain comments
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                output.RemoveRange(0, 1);
             
             output.RemoveRange(0, 2);
 
