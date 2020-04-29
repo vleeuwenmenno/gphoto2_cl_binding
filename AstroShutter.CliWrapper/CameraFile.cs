@@ -38,6 +38,10 @@ namespace AstroShutter.CliWrapper
             }
         }
 
+        /// <summary>
+        /// Indicates if you have permission to delete this object.
+        /// </summary>
+        /// <value></value>
         public bool canDelete 
         { 
             get
@@ -63,7 +67,7 @@ namespace AstroShutter.CliWrapper
                 }
             }
         }
-
+        
         public DateTime createdAt 
         { 
             get
@@ -90,6 +94,10 @@ namespace AstroShutter.CliWrapper
             }
         }
 
+        /// <summary>
+        /// Size of the file given in bytes (Folders always return 0 bytes)
+        /// </summary>
+        /// <value></value>
         public long size
         { 
             get
@@ -115,7 +123,7 @@ namespace AstroShutter.CliWrapper
                 }
             }
         }
-
+    
         public string mimeType
         { 
             get
@@ -210,12 +218,22 @@ namespace AstroShutter.CliWrapper
             }
         }
 
-        public static void DeleteFolder(Camera camera, string path)
+        /// <summary>
+        /// Delete all files in the given folder
+        /// </summary>
+        /// <param name="camera">On which camera should we do this</param>
+        /// <param name="path">Path to the folder to clear</param>
+        public static void EmptyFolder(Camera camera, string path)
         {
             Utilities.gphoto2($"--port={camera.port} --delete-all-files --folder {path}");
         }
 
-        public static void DeleteFolder(Camera camera, CameraFile path)
+        /// <summary>
+        /// Delete all files in the given folder
+        /// </summary>
+        /// <param name="camera">On which camera should we do this</param>
+        /// <param name="path">Object of the folder to clear</param>
+        public static void EmptyFolder(Camera camera, CameraFile path)
         {
             if (path.isFolder)
                 Utilities.gphoto2($"--port={camera.port} --delete-all-files --folder {path.path}");
