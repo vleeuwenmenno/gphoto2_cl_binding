@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <PackageId>AstroShutter.CliWrapper</PackageId>
-    <Version>0.0.2</Version>
+    <Version>0.1.0</Version>
     <Authors>Menno van Leeuwen</Authors>
     <Company></Company>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageLicense>MIT</PackageLicense>
     <PackageDescription>A gphoto2 command wrapper for use in C#</PackageDescription>
-    <RepositoryUrl>hhttps://github.com/vleeuwenmenno/AstroShutter-CliWrapper</RepositoryUrl>
+    <RepositoryUrl>https://github.com/vleeuwenmenno/AstroShutter-CliWrapper</RepositoryUrl>
   </PropertyGroup>
 </Project>
