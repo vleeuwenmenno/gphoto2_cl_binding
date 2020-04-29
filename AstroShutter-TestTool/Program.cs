@@ -87,16 +87,28 @@ namespace AstroShutter_TestTool
             
             foreach (StorageInfo sinfo in info)
             {
-                List<CameraFile> files = CameraFile.FindAll(sinfo.root.fs[0], "/store_00020001/DCIM/102CANON");
-                foreach (CameraFile f in files)
-                {
-                    Console.WriteLine($"File read: \n\tFile name: {f.filename}\n\tPath: {f.path}\n\tSize: {Utilities.GetKBytesReadable(f.size /1024)}\n\tCreation time: {f.createdAt.ToLongTimeString()} {f.createdAt.ToLongDateString()}\n\tMime-type: {f.mimeType}");
-                }
-
-                CameraFile ff = CameraFile.Find(sinfo.root.fs[0], "/store_00020001/DCIM/100CANON/IMG_0622.CR2");
-                Console.WriteLine($"File read: \n\tFile name: {ff.filename}\n\tPath: {ff.path}\n\tSize: {Utilities.GetKBytesReadable(ff.size /1024)}\n\tCreation time: {ff.createdAt.ToLongTimeString()} {ff.createdAt.ToLongDateString()}\n\tMime-type: {ff.mimeType}");
-
                 Console.WriteLine($"{sinfo.label}\n\tStorage type: {sinfo.desc}\n\tRoot: {sinfo.root.path}\n\tAccess rights: {sinfo.accessRights}\n\tType: {sinfo.type}\n\tFile system type: {sinfo.fileSystemType}\n\tCapacity: {Utilities.GetKBytesReadable(sinfo.capacity)}\n\tFree space: {Utilities.GetKBytesReadable(sinfo.free)}");
+            }
+
+            CameraFile fi = cam.captureImage()[0];
+            Console.WriteLine($"Captured {fi.filename}");
+
+            if (CameraFile.Exists(cam, fi.path))
+                Console.WriteLine($"{fi.filename} exists");
+            else
+                Console.WriteLine($"{fi.filename} does not exist, but should!?");
+
+            fi.Delete();
+            
+            if (!CameraFile.Exists(cam, fi.path))
+                Console.WriteLine($"{fi.filename} has been deleted");
+            else
+                Console.WriteLine($"{fi.filename} still exists?!");
+
+            if (CameraFile.Exists(cam, $"{fi.pathWithoutExtension}.JPG"))
+            {
+                Console.WriteLine("JPG Found, deleting that aswell...");
+                CameraFile.Delete(cam, $"{fi.pathWithoutExtension}.JPG");
             }
 
             Console.WriteLine($"################################ TEST File System ################################\n\n");

@@ -22,6 +22,22 @@ namespace AstroShutter.CliWrapper
             }
         }
 
+        public string filenameWithoutExtenstion
+        { 
+            get
+            {
+                return Path.GetFileNameWithoutExtension(path);
+            }
+        }
+
+        public string pathWithoutExtension
+        { 
+            get
+            {
+                return path.Replace(Path.GetFileName(path), "") + filenameWithoutExtenstion;
+            }
+        }
+
         public bool canDelete 
         { 
             get
@@ -146,7 +162,88 @@ namespace AstroShutter.CliWrapper
         /// </summary>
         public void Delete()
         {
+            List<string> output = Utilities.gphoto2($"--port={port} --delete-file={path}").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
+            output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
 
+            foreach (string line in output)
+            {
+                if (line.Contains("-108: 'File not found'"))
+                    throw new FileNotFoundException();
+            }
+        }
+
+        /// <summary>
+        /// Check if a file exists
+        /// </summary>
+        /// <returns></returns>
+        public bool Exists()
+        {
+            if (exists(this, this.path))
+            {
+                List<string> output = Utilities.gphoto2($"--port={port} --show-info={path}").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
+                output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+                foreach (string line in output)
+                {
+                    if (line.Contains("-108: 'File not found'"))
+                        return false;
+                }
+
+                return true;
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Delete the file from the 
+        /// </summary>
+        public static void Delete(Camera cam, string path)
+        {
+            List<string> output = Utilities.gphoto2($"--port={cam.port} --delete-file={path}").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
+            output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+            foreach (string line in output)
+            {
+                if (line.Contains("-108: 'File not found'"))
+                    throw new FileNotFoundException();
+            }
+        }
+
+        public static void DeleteFolder(Camera camera, string path)
+        {
+            Utilities.gphoto2($"--port={camera.port} --delete-all-files --folder {path}");
+        }
+
+        public static void DeleteFolder(Camera camera, CameraFile path)
+        {
+            if (path.isFolder)
+                Utilities.gphoto2($"--port={camera.port} --delete-all-files --folder {path.path}");
+            else
+                throw new Exception("Trying to empty a folder but path given contains a file!");
+        }
+
+        /// <summary>
+        /// Check if a file exists
+        /// </summary>
+        /// <returns></returns>
+        public static bool Exists(Camera cam, string path)
+        {
+            if (exists(cam.storageInfo[0].root.fs[0], path))
+            {
+                List<string> output = Utilities.gphoto2($"--port={cam.port} --show-info={path}").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
+                output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+                foreach (string line in output)
+                {
+                    if (line.Contains("-108: 'File not found'"))
+                        return false;
+                }
+
+                return true;
+            }
+            else
+                return false;
         }
 
         /// <summary>
@@ -195,6 +292,30 @@ namespace AstroShutter.CliWrapper
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Internal function to see if the file exists without asking the camera (Is part of Exists() which does check the camera)
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        private static bool exists(CameraFile node, string path)
+        {
+            if (node == null)
+                return false;
+
+            if (node.path == path)
+                return true;
+
+            foreach (CameraFile child in node.children)
+            {
+                var found = Find(child, path);
+                if (found != null)
+                    return true;
+            }
+
+            return false;
         }
     }
 }
