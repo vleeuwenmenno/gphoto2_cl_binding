@@ -59,6 +59,72 @@ namespace AstroShutter.CliWrapper
                 return error + "\n" + output;
         }
 
+        public static byte[] gphoto2Bytes(string args)
+        {
+            ProcessStartInfo startInfo;
+            string random = "";
+            string binary = "";
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                random = new Random((int)((TimeSpan)(DateTime.UtcNow - new DateTime(1970, 1, 1))).TotalSeconds).Next(0, 10000).ToString();
+            
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                binary = "/usr/local/bin/gphoto2";
+            
+            else
+                binary = "/usr/bin/gphoto2";
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                startInfo = new ProcessStartInfo() { WorkingDirectory = Environment.CurrentDirectory, FileName = @"E:\MSYS2\usr\\bin\mintty.exe", Arguments = $"-w hide /bin/env MSYSTEM=MINGW64 /bin/bash -l -c 'gphoto2 {args} > temp-{random}.tmp'" };
+            
+            else
+                startInfo = new ProcessStartInfo() { FileName = binary, Arguments = args, }; 
+
+            Process process = new Process();
+
+            startInfo.UseShellExecute = false;
+            startInfo.RedirectStandardOutput = true;
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+            process.StartInfo = startInfo;
+            process.Start();
+
+            
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                process.WaitForExit();
+                while (!File.Exists(Environment.CurrentDirectory + $"/temp-{random}.tmp") || File.Exists(Environment.CurrentDirectory + $"/temp-{random}.tmp") && Utilities.isFileLocked(new FileInfo(Environment.CurrentDirectory + $"/temp-{random}.tmp")))
+                {
+                    Thread.Sleep(100);
+                }
+
+                byte[] imageBytes = File.ReadAllBytes(Environment.CurrentDirectory + $"/temp-{random}.tmp");
+                File.Delete(Environment.CurrentDirectory + $"/temp-{random}.tmp");
+                return imageBytes;
+            }
+            else
+            {
+                FileStream baseStream = process.StandardOutput.BaseStream as FileStream;
+                byte[] imageBytes = null;
+                int lastRead = 0;
+
+                using (MemoryStream ms = new MemoryStream())
+                {            
+                    byte[] buffer = new byte[4096];
+                    do
+                    {
+                        lastRead = baseStream.Read(buffer, 0, buffer.Length);
+                        ms.Write(buffer, 0, lastRead);
+                    } while (lastRead > 0);
+
+                    imageBytes = ms.ToArray();
+                }
+
+                process.WaitForExit();
+                return imageBytes;
+            }
+        }
+
         public static string GetKBytesReadable(long ii)
         {
             // Get absolute value

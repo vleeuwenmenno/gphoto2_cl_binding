@@ -31,6 +31,7 @@ namespace AstroShutter_TestTool
 
                 if (!cam.isLocked)
                 {
+                    testPreviewCapture(cam);
                     testFileSystem(cam);
                     // testOptions(cam);
                     // testGetSet(cam);
@@ -38,6 +39,13 @@ namespace AstroShutter_TestTool
                     // testCapture(cam);
                 }
             }
+        }
+
+        static void testPreviewCapture(Camera cam)
+        {
+            byte[] prev = cam.capturePreview();
+            File.WriteAllBytes(Environment.CurrentDirectory + "/preview.jpg",prev);
+            Console.WriteLine($"Preview saved to {Environment.CurrentDirectory}/preview.jpg");
         }
 
         static void testCapture(Camera cam)

@@ -55,6 +55,13 @@ namespace AstroShutter.CliWrapper
             }
         }
 
+        public bool Busy
+        {
+            get { return isBusy; }
+        }
+
+        private bool isBusy;
+
         public bool isLocked 
         {
             get
@@ -77,6 +84,7 @@ namespace AstroShutter.CliWrapper
 
         public List<CameraFile> captureImage(int bulb = 0)
         {
+            isBusy = true;
             string args = "";
 
             if (bulb > 0)
@@ -98,7 +106,16 @@ namespace AstroShutter.CliWrapper
                     files.Add(CameraFile.Find(storageInfo[0].root.fs[0], line.Replace("FILEADDED ", "").Split(' ')[1] + "/" + line.Replace("FILEADDED ", "").Split(' ')[0]));
             }
 
+            isBusy = false;
             return files;
+        }
+
+        public byte[] capturePreview()
+        {
+            isBusy = true;
+            byte[] ret = Utilities.gphoto2Bytes($"--port={port} --capture-preview --stdout");
+            isBusy = false;
+            return ret;
         }
 
         #endregion
