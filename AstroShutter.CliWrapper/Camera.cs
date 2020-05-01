@@ -1,3 +1,4 @@
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System;
@@ -200,6 +201,20 @@ namespace AstroShutter.CliWrapper
                 return sinf;
             }
         }
+
+        public void DownloadFile(string path, string localpath)
+        {
+            List<string> output = Utilities.gphoto2($"--port={port} --get-file={path} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
+            output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+            foreach (string line in output)
+            {
+                if (line.Contains("-108: 'File not found'"))
+                {
+                    throw new FileNotFoundException();
+                }
+            }
+        }
     
         #endregion
 
@@ -244,6 +259,14 @@ namespace AstroShutter.CliWrapper
             }
         }
 
+        public List<string> colorSpaceOptions
+        {
+            get
+            {
+                return getConfig("colorspace").options;
+            }
+        }
+
         #endregion
 
         #region Get/Set Options
@@ -281,11 +304,11 @@ namespace AstroShutter.CliWrapper
                 setConfig("imageformat", ((int)value).ToString(), true);
             }
         }
-        public int iso
+        public string iso
         {
             get
             {
-                return Convert.ToInt32((double)getConfig("iso").value);
+                return (string)getConfig("iso").value.ToString();
             }
             set
             {
@@ -330,6 +353,18 @@ namespace AstroShutter.CliWrapper
             }
         }
 
+        public string colorSpace
+        {
+            get
+            {
+                return getConfig("colorspace").value.ToString();
+            }
+            set
+            {
+                setConfig("colorspace", value, true);
+            }
+        }
+
         public CaptureTarget captureTarget
         {
             get
@@ -357,15 +392,20 @@ namespace AstroShutter.CliWrapper
 
         public bool setConfig(string name, string value, bool dontCheck = false)
         {
+            isBusy = true;
             List<string> output = Utilities.gphoto2($"--set-config {name}={value} --port={port} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
-            
+
             if (dontCheck)
+            {
+                isBusy = false;
                 return true;
+            }
             
             if (output.Count != 0)
             {
                 Config c = getConfig(name);
+                isBusy = false;
 
                 if (c.value.ToString() == value)
                     return true;
@@ -378,6 +418,7 @@ namespace AstroShutter.CliWrapper
 
         public Config getConfig(string name)
         {
+            isBusy = true;
             List<string> output = Utilities.gphoto2($"--get-config {name} --port={port} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
 
             string label = "";
@@ -390,11 +431,13 @@ namespace AstroShutter.CliWrapper
             {
                 if (line.Contains("Could not claim the USB device"))
                 {
+                    isBusy = false;
                     return null;
                 }
 
                 if (line.Contains($"{name} not found in configuration tree."))
                 {
+                    isBusy = false;
                     throw new NotSupportedException($"This camera does not support {name}");
                 }
 
@@ -435,6 +478,7 @@ namespace AstroShutter.CliWrapper
                 }                
             }
 
+            isBusy = false;
             return new Config(label, ro, type, current, options);
         }
 

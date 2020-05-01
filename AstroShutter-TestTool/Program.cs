@@ -140,7 +140,7 @@ namespace AstroShutter_TestTool
             Console.WriteLine($"################################ TEST get/set CONFIG ################################");
 
             cam.captureTarget = CaptureTarget.InternalRAM;
-            cam.iso = 3200;
+            cam.iso = "3200";
             cam.shutterSpeed = "1/50";
             cam.aspectRatio = "16:9";
             cam.aperture = 7.1;
@@ -149,7 +149,7 @@ namespace AstroShutter_TestTool
             Console.WriteLine($"Current settings:\n\tISO {cam.iso}\n\tAperture {cam.aperture}\n\tShutter speed {cam.shutterSpeed}\n\tAspect ratio {cam.aspectRatio}\n\tCapture target {cam.captureTarget}\n\tImage format {cam.imageFormat}");
 
             cam.captureTarget = CaptureTarget.MemoryCard;
-            cam.iso = 800;
+            cam.iso = "800";
             cam.shutterSpeed = "1/10";
             cam.aspectRatio = "3:2";
             cam.aperture = 5.6;
