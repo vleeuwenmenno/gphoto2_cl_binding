@@ -76,7 +76,7 @@ Find out if your package manager has a source which can install gphoto2
  - [x] Listing files/folders
  - [x] Checking if file/folder exists
  - [x] Deleting files (Single file/entire folder)
- - [ ] Downloading of files with specific methods (single file, range of files or entire folders)
+ - [x] Downloading of files with specific methods (single file, range of files or entire folders)
  - [ ] More efficient multi-get/set so we have to queury commands less often
  - Maybe more if you are in need of a feature please request it by making a new issue in the issue tracker
 
