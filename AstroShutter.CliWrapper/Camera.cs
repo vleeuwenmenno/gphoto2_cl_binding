@@ -13,11 +13,14 @@ namespace AstroShutter.CliWrapper
         public string model { get; }
         public string port { get; }
 
-        public Camera(string m, string p)
+        public Camera(string m, string p, bool verbose = false)
         {
             model = m;
             port = p;
+            this.verbose = verbose;
         }
+
+        private bool verbose {get;}
 
         public double batteryLevel 
         {
@@ -373,6 +376,16 @@ namespace AstroShutter.CliWrapper
             List<string> output = Utilities.gphoto2($"--set-config {name}={value} --port={port} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
 
+            if (this.verbose)
+            {
+                Console.WriteLine("############ VERBOSE ############");
+                foreach (string line in output)
+                {
+                    Console.WriteLine(line);
+                }
+                Console.WriteLine("############ VERBOSE ############");
+            }
+
             if (dontCheck)
             {
                 isBusy = false;
@@ -404,10 +417,18 @@ namespace AstroShutter.CliWrapper
             object current = "";
             List<string> options = new List<string>();
 
-            foreach (string line in output)
+            if (this.verbose)
             {
-                Console.WriteLine(line);
-                
+                Console.WriteLine("############ VERBOSE ############");
+                foreach (string line in output)
+                {
+                    Console.WriteLine(line);
+                }
+                Console.WriteLine("############ VERBOSE ############");
+            }
+
+            foreach (string line in output)
+            {                
                 if (line.Contains("Could not claim the USB device"))
                 {
                     isBusy = false;
