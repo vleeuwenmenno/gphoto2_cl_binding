@@ -8,7 +8,7 @@ namespace AstroShutter.CliWrapper
 {
     public class Cli
     {
-        public static List<Camera> AutoDetect()
+        public static List<Camera> AutoDetect(bool verboseCameraOutput = false)
         {
             List<string> output = Utilities.gphoto2("--auto-detect").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
 
@@ -22,7 +22,7 @@ namespace AstroShutter.CliWrapper
             foreach (string line in output)
             {
                 var test = Regex.Split(line, @"\s{2,}");
-                cameras.Add(new Camera(test[0], test[1]));
+                cameras.Add(new Camera(test[0], test[1], verboseCameraOutput));
             }
 
             return cameras;

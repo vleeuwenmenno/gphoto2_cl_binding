@@ -12,7 +12,7 @@ namespace AstroShutter_TestTool
     {
         static void Main(string[] args)
         {
-            List<Camera> cams = Cli.AutoDetect();
+            List<Camera> cams = Cli.AutoDetect(true);
 
             foreach (Camera cam in cams)
             {
@@ -107,7 +107,7 @@ namespace AstroShutter_TestTool
                 Console.WriteLine($"{fi.filename} does not exist, but should!?");
 
             cam.DownloadFile(fi.path, $"{Environment.CurrentDirectory}/{Path.GetFileName(fi.filename)}");
-            Console.WriteLine($"File downloaded to {Environment.CurrentDirectory}/{Path.GetFileName(fi.filename)}");
+            Console.WriteLine($"File downloaded from {fi.path} to {Environment.CurrentDirectory}/{Path.GetFileName(fi.filename)}");
 
             fi.Delete();
             

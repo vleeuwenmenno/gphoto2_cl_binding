@@ -13,6 +13,19 @@ namespace AstroShutter.CliWrapper
         public string model { get; }
         public string port { get; }
 
+        /// <summary>
+        /// Clears cached options of all ***Options such as isoOptions, aparatureOptions etc...
+        /// </summary>
+        public void InvalidateOptions()
+        {
+            _imageFormatOptions = null;
+            _isoOptions = null;
+            _apertureOptions = null;
+            _shutterSpeedOptions = null;
+            _aspectRatioOptions = null;
+            _colorSpaceOptions = null;
+        }
+
         public Camera(string m, string p, bool verbose = false)
         {
             model = m;
@@ -218,6 +231,20 @@ namespace AstroShutter.CliWrapper
                 }
             }
         }
+
+        public void DownloadFolder(string folderPath, string localPath)
+        {
+            List<string> output = Utilities.gphoto2($"--port={port} ---get-all-files --folder={folderPath} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
+            output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+            foreach (string line in output)
+            {
+                if (line.Contains("-107: 'Directory not found'"))
+                {
+                    throw new DirectoryNotFoundException();
+                }
+            }
+        }
     
         #endregion
 
@@ -226,7 +253,10 @@ namespace AstroShutter.CliWrapper
         {
             get
             {
-                return getConfig("imageformat").options;
+                if (_imageFormatOptions == null)
+                    _imageFormatOptions = getConfig("imageformat").options;
+
+                return _imageFormatOptions;
             }
         }
 
@@ -234,7 +264,10 @@ namespace AstroShutter.CliWrapper
         {
             get
             {
-                return getConfig("iso").options;
+                if (_isoOptions == null)
+                    _isoOptions = getConfig("iso").options;
+
+                return _isoOptions;
             }
         }
 
@@ -242,7 +275,10 @@ namespace AstroShutter.CliWrapper
         {
             get
             {
-                return getConfig("aperture").options;
+                if (_apertureOptions == null)
+                    _apertureOptions = getConfig("aperture").options;
+
+                return _apertureOptions;
             }
         }
 
@@ -250,7 +286,10 @@ namespace AstroShutter.CliWrapper
         {
             get
             {
-                return getConfig("shutterspeed").options;
+                if (_shutterSpeedOptions == null)
+                    _shutterSpeedOptions = getConfig("shutterspeed").options;
+
+                return _shutterSpeedOptions;
             }
         }
 
@@ -258,7 +297,10 @@ namespace AstroShutter.CliWrapper
         {
             get
             {
-                return getConfig("aspectratio").options;
+                if (_aspectRatioOptions == null)
+                    _aspectRatioOptions = getConfig("aspectratio").options;
+
+                return _aspectRatioOptions;
             }
         }
 
@@ -266,9 +308,19 @@ namespace AstroShutter.CliWrapper
         {
             get
             {
-                return getConfig("colorspace").options;
+                if (_imageFormatOptions == null)
+                    _imageFormatOptions = getConfig("colorspace").options;
+
+                return _imageFormatOptions;
             }
         }
+
+        private List<string> _imageFormatOptions;
+        private List<string> _isoOptions;
+        private List<string> _apertureOptions;
+        private List<string> _shutterSpeedOptions;
+        private List<string> _aspectRatioOptions;
+        private List<string> _colorSpaceOptions;
 
         #endregion
 
@@ -378,12 +430,12 @@ namespace AstroShutter.CliWrapper
 
             if (this.verbose)
             {
-                Console.WriteLine("############ VERBOSE ############");
+                Console.WriteLine("################ VERBOSE ################");
                 foreach (string line in output)
                 {
                     Console.WriteLine(line);
                 }
-                Console.WriteLine("############ VERBOSE ############");
+                Console.WriteLine("################ VERBOSE ################");
             }
 
             if (dontCheck)
@@ -419,12 +471,12 @@ namespace AstroShutter.CliWrapper
 
             if (this.verbose)
             {
-                Console.WriteLine("############ VERBOSE ############");
+                Console.WriteLine("################ VERBOSE ################");
                 foreach (string line in output)
                 {
                     Console.WriteLine(line);
                 }
-                Console.WriteLine("############ VERBOSE ############");
+                Console.WriteLine("################ VERBOSE ################");
             }
 
             foreach (string line in output)
