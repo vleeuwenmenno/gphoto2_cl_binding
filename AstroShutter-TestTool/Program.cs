@@ -106,6 +106,9 @@ namespace AstroShutter_TestTool
             else
                 Console.WriteLine($"{fi.filename} does not exist, but should!?");
 
+            cam.DownloadFile(fi.path, $"{Environment.CurrentDirectory}/{Path.GetFileName(fi.filename)}");
+            Console.WriteLine($"File downloaded to {Environment.CurrentDirectory}/{Path.GetFileName(fi.filename)}");
+
             fi.Delete();
             
             if (!CameraFile.Exists(cam, fi.path))
