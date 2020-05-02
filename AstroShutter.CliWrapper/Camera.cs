@@ -94,7 +94,7 @@ namespace AstroShutter.CliWrapper
                 args = $"--port={port} --trigger-capture --wait-event=\"FILEADDED\"";
 
             // If we have RAW and JPEG we need to wait for the event twice
-            if (imageFormat == ImageFormat.RAWAndLargeFineJPEG)
+            if (imageFormat == "RAW + Large Fine JPEG")
                 args += " --wait-event=\"FILEADDED\"";
 
             List<string> output = Utilities.gphoto2(args).Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
@@ -270,38 +270,15 @@ namespace AstroShutter.CliWrapper
         #endregion
 
         #region Get/Set Options
-        public ImageFormat imageFormat
+        public string imageFormat
         {
             get
             {
-                string v = (string)getConfig("imageformat").value;
-
-                if (v == "Large Fine JPEG")
-                    return ImageFormat.LargeFineJPEG;
-                else if (v == "Large Normal JPEG")
-                    return ImageFormat.LargeNormalJPEG;
-                else if (v == "Medium Fine JPEG")
-                    return ImageFormat.MediumFineJPEG;
-                else if (v == "Medium Normal JPEG")
-                    return ImageFormat.MediumNormalJPEG;
-                else if (v == "Small Fine JPEG")
-                    return ImageFormat.SmallFineJPEG;
-                else if (v == "Small Normal JPEG")
-                    return ImageFormat.SmallNormalJPEG;
-                else if (v == "Smaller JPEG")
-                    return ImageFormat.SmallerJPEG;
-                else if (v == "Tiny JPEG")
-                    return ImageFormat.TinyJPEG;
-                else if (v == "RAW + Large Fine JPEG")
-                    return ImageFormat.RAWAndLargeFineJPEG;
-                else if (v == "RAW")
-                    return ImageFormat.RAW;
-                else
-                    return ImageFormat.RAW;
+                return (string)getConfig("imageformat").value;
             }
             set
             {
-                setConfig("imageformat", ((int)value).ToString(), true);
+                setConfig("imageformat", value, true);
             }
         }
         public string iso
@@ -429,6 +406,8 @@ namespace AstroShutter.CliWrapper
 
             foreach (string line in output)
             {
+                Console.WriteLine(line);
+                
                 if (line.Contains("Could not claim the USB device"))
                 {
                     isBusy = false;
