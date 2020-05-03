@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace AstroShutter.CLIBindings
+namespace gphoto2_cl_binding
 {
     public class Config
     {

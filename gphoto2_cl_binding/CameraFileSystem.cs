@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace AstroShutter.CLIBindings
+namespace gphoto2_cl_binding
 {
     public class CameraFileSystem
     {

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\AstroShutter.CLIBindings\AstroShutter.CLIBindings.csproj" />
+    <ProjectReference Include="..\gphoto2_cl_binding\gphoto2_cl_binding.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

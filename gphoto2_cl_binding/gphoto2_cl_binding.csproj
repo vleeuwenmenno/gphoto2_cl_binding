@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>AstroShutter.CLIBindings</PackageId>
+    <PackageId>gphoto2_cl_binding</PackageId>
     <Version>0.1.2</Version>
     <Authors>Menno van Leeuwen</Authors>
     <Company></Company>
@@ -9,6 +9,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageLicense>MIT</PackageLicense>
     <PackageDescription>A gphoto2 command wrapper for use in C#</PackageDescription>
-    <RepositoryUrl>https://github.com/vleeuwenmenno/AstroShutter-CLIBindings</RepositoryUrl>
+    <RepositoryUrl>https://github.com/vleeuwenmenno/gphoto2_cl_binding</RepositoryUrl>
   </PropertyGroup>
 </Project>

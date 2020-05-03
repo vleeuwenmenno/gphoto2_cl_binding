@@ -1,6 +1,6 @@
-# AstroShutter Cli bindings
+# Command line bindings of GPhoto2 for C#
 
-This is a binding for gphoto2 CLI. (WARNING This classlib depends on gphoto2 command, not libgphoto2!)
+This is a binding for gphoto2 command line tool. (WARNING This classlib depends on gphoto2 command!)
 
 Currently it has been tested to work on the following platforms:
 

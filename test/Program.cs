@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading;
 using System;
 using System.Collections.Generic;
-using AstroShutter.CLIBindings;
+using gphoto2_cl_binding;
 
-namespace AstroShutter_TestTool
+namespace test
 {
     class Program
     {

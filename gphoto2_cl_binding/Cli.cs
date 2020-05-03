@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace AstroShutter.CLIBindings
+namespace gphoto2_cl_binding
 {
     public class Cli
     {

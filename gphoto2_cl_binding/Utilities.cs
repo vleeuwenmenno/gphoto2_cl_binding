@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Threading;
 
-namespace AstroShutter.CLIBindings
+namespace gphoto2_cl_binding
 {
     public class Utilities
     {
