@@ -82,7 +82,7 @@ Find out if your package manager has a source which can install gphoto2
 
 ## Examples
 
-In `AstroShutter-TestTool/` is a fully working example of how to use this library.
+In `test/` contains some performance tests and functionality tests, here you can see how to use this library. Proper examples will be added later.
 
 But a bare-bones example is as follows:
 

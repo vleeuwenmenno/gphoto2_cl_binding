@@ -9,8 +9,11 @@ namespace gphoto2_cl_binding
 {
     public class Utilities
     {
-        public static string gphoto2(string args)
+        public static string gphoto2(string args, string cwd = "")
         {
+            if (cwd == "")
+             cwd = Environment.CurrentDirectory;
+
             ProcessStartInfo startInfo;
             string random = "";
             string binary = "";
@@ -25,10 +28,10 @@ namespace gphoto2_cl_binding
                 binary = "/usr/bin/gphoto2";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                startInfo = new ProcessStartInfo() { WorkingDirectory = Environment.CurrentDirectory, FileName = @"E:\MSYS2\usr\\bin\mintty.exe", Arguments = $"-w hide -l temp-{random} /bin/env MSYSTEM=MINGW64 /bin/bash -l -c 'gphoto2 {args}'" };
+                startInfo = new ProcessStartInfo() { WorkingDirectory = cwd, FileName = @"E:\MSYS2\usr\\bin\mintty.exe", Arguments = $"-w hide -l temp-{random} /bin/env MSYSTEM=MINGW64 /bin/bash -l -c 'gphoto2 {args}'" };
             
             else
-                startInfo = new ProcessStartInfo() { FileName = binary, Arguments = args, }; 
+                startInfo = new ProcessStartInfo() { WorkingDirectory = cwd, FileName = binary, Arguments = args, }; 
 
             Process process = new Process();
 
@@ -59,8 +62,11 @@ namespace gphoto2_cl_binding
                 return error + "\n" + output;
         }
 
-        public static byte[] gphoto2Bytes(string args)
+        public static byte[] gphoto2Bytes(string args, string cwd = "")
         {
+            if (cwd == "")
+             cwd = Environment.CurrentDirectory;
+
             ProcessStartInfo startInfo;
             string random = "";
             string binary = "";
@@ -75,10 +81,10 @@ namespace gphoto2_cl_binding
                 binary = "/usr/bin/gphoto2";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                startInfo = new ProcessStartInfo() { WorkingDirectory = Environment.CurrentDirectory, FileName = @"E:\MSYS2\usr\\bin\mintty.exe", Arguments = $"-w hide /bin/env MSYSTEM=MINGW64 /bin/bash -l -c 'gphoto2 {args} > temp-{random}.tmp'" };
+                startInfo = new ProcessStartInfo() { WorkingDirectory = cwd, FileName = @"E:\MSYS2\usr\\bin\mintty.exe", Arguments = $"-w hide /bin/env MSYSTEM=MINGW64 /bin/bash -l -c 'gphoto2 {args} > temp-{random}.tmp'" };
             
             else
-                startInfo = new ProcessStartInfo() { FileName = binary, Arguments = args, }; 
+                startInfo = new ProcessStartInfo() { WorkingDirectory = cwd, FileName = binary, Arguments = args, }; 
 
             Process process = new Process();
 

@@ -4,10 +4,14 @@
     <ProjectReference Include="..\gphoto2_cl_binding\gphoto2_cl_binding.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="libgphoto2" Version="0.3.2" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>AstroShutter_TestTool</RootNamespace>
+    <RootNamespace>test</RootNamespace>
   </PropertyGroup>
 
 </Project>

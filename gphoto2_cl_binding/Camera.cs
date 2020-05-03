@@ -96,6 +96,11 @@ namespace gphoto2_cl_binding
 
         #region Capturing
 
+        /// <summary>
+        /// Capture a photo and return the file location on SD card of the camera.
+        /// </summary>
+        /// <param name="bulb">Bulb time, if 0 given then the current shutterspeed set on the camera will be used instead.</param>
+        /// <returns></returns>
         public List<string> captureImage(int bulb = 0)
         {
             isBusy = true;
@@ -134,6 +139,48 @@ namespace gphoto2_cl_binding
             return files;
         }
 
+        /// <summary>
+        /// Capture a photo and return it as byte array
+        /// </summary>
+        /// <param name="bulb">Bulb time, if 0 given then the current shutterspeed set on the camera will be used instead.</param>
+        /// <returns></returns>
+        public byte[] captureImageBytes(int bulb = 0)
+        {
+            isBusy = true;
+            string args = "";
+
+            if (bulb > 0)
+                args = $"--port={port} --set-config eosremoterelease=2 --wait-event={bulb}s --set-config eosremoterelease=4 --wait-event=\"FILEADDED\"";
+            else
+                args = $"--port={port} --capture-image -q";
+
+            // If we have RAW and JPEG we need to wait for the event twice
+            if (imageFormat == "RAW + Large Fine JPEG")
+                throw new Exception("Multiple outputs is not supported with capturing to byte array");
+
+            /// TODO: Try get combine get file and this call so we can get rid of the extra call (This calls wait event and the extra call below causes it to be 3.4s slower PER photo!)
+            List<string> output = Utilities.gphoto2(args).Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
+            output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+            string filePath ="";
+
+            foreach (string line in output)
+            {
+                if (line.StartsWith("FILEADDED "))
+                    filePath = line.Replace("FILEADDED ", "").Split(' ')[1] + "/" + line.Replace("FILEADDED ", "").Split(' ')[0];
+            }
+
+            if (bulb == 0)
+                filePath = output[0];
+
+            byte[] bytes = Utilities.gphoto2Bytes($"--stdout --get-file={filePath}");
+            isBusy = false;
+            return bytes;
+        }
+
+        /// <summary>
+        /// Capture a preview photo and return it as byte array
+        /// </summary>
+        /// <returns></returns>
         public byte[] capturePreview()
         {
             isBusy = true;
@@ -146,6 +193,46 @@ namespace gphoto2_cl_binding
 
         #region File System
 
+        /// <summary>
+        /// Returns the number of photos in the requested folder.
+        /// </summary>
+        /// <param name="path">Folder path to count files in</param>
+        /// <returns></returns>
+        public int NumFiles(string path = "")
+        {
+            if(path == "")
+                path = storageInfo[0].root.fs[0].path;
+
+            List<string> output = Utilities.gphoto2($"--port={port} --num-files --folder={path} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
+            output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+            int.TryParse(output[0], out int c);
+            return c;
+        }
+
+        /// <summary>
+        /// Returns the index of the last file in the SD Card of the camera
+        /// </summary>
+        /// <returns></returns>
+        public int LastFile()
+        {
+            List<string> output = Utilities.gphoto2("--port=" + port + " --list-files").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
+            output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+            output.Remove(output.Last());
+            string lastFileNo = output.Last().Substring(1);
+            string fileNo = "";
+
+            for (int i = 0; i < lastFileNo.Length; i++)
+                if(Char.IsDigit(lastFileNo[i]))
+                    fileNo += lastFileNo[i];
+                else
+                    break;
+
+            int.TryParse(fileNo, out int c);
+            return c;
+        }
+        
         public List<StorageInfo> storageInfo 
         { 
             get
@@ -225,9 +312,11 @@ namespace gphoto2_cl_binding
             }
         }
 
-        public void DownloadFile(string path, string localpath)
+        #region Downloading
+
+        public void DownloadFile(string localpath, string path)
         {
-            List<string> output = Utilities.gphoto2($"--port={port} --get-file={path} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
+            List<string> output = Utilities.gphoto2($"--port={port} --get-file={path} -q", Path.GetDirectoryName(localpath)).Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
 
             if (this.verbose)
@@ -247,6 +336,21 @@ namespace gphoto2_cl_binding
                     throw new FileNotFoundException();
                 }
             }
+
+            // Rename downloaded file to requested name
+            File.Move($"{Path.GetDirectoryName(localpath)}/{Path.GetFileName(path)}", $"{Path.GetDirectoryName(localpath)}/{Path.GetFileName(localpath)}");
+        }
+
+        public void DownloadLast(int count, string localFolder, string folder = "")
+        {
+            int numFiles = NumFiles(folder);
+            if (numFiles > 0 && numFiles >= count) /// Make sure we have 1 or more and not more than all to download
+            {
+                List<string> output = Utilities.gphoto2($"--port={port} --get-file {(numFiles-count)+1}-{numFiles} -q", localFolder).Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
+                output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+            }
+            else if (numFiles < count)
+                throw new IndexOutOfRangeException($"Folder contains {numFiles} files, you tried to fetch {count}");
         }
 
         public void DownloadFolder(string folderPath, string localPath)
@@ -272,10 +376,15 @@ namespace gphoto2_cl_binding
                 }
             }
         }
+
+        #endregion
     
         #endregion
 
-        #region Available options lists
+        #region Options
+
+        #region Image format
+
         public List<string> imageFormatOptions
         {
             get
@@ -286,6 +395,21 @@ namespace gphoto2_cl_binding
                 return _imageFormatOptions;
             }
         }
+        public string imageFormat
+        {
+            get
+            {
+                return (string)getConfig("imageformat").value;
+            }
+            set
+            {
+                setConfig("imageformat", value, true);
+            }
+        }
+
+        #endregion
+
+        #region ISO
 
         public List<string> isoOptions
         {
@@ -298,71 +422,6 @@ namespace gphoto2_cl_binding
             }
         }
 
-        public List<string> apertureOptions
-        {
-            get
-            {
-                if (_apertureOptions == null)
-                    _apertureOptions = getConfig("aperture").options;
-
-                return _apertureOptions;
-            }
-        }
-
-        public List<string> shutterSpeedOptions
-        {
-            get
-            {
-                if (_shutterSpeedOptions == null)
-                    _shutterSpeedOptions = getConfig("shutterspeed").options;
-
-                return _shutterSpeedOptions;
-            }
-        }
-
-        public List<string> aspectRatioOptions
-        {
-            get
-            {
-                if (_aspectRatioOptions == null)
-                    _aspectRatioOptions = getConfig("aspectratio").options;
-
-                return _aspectRatioOptions;
-            }
-        }
-
-        public List<string> colorSpaceOptions
-        {
-            get
-            {
-                if (_imageFormatOptions == null)
-                    _imageFormatOptions = getConfig("colorspace").options;
-
-                return _imageFormatOptions;
-            }
-        }
-
-        private List<string> _imageFormatOptions;
-        private List<string> _isoOptions;
-        private List<string> _apertureOptions;
-        private List<string> _shutterSpeedOptions;
-        private List<string> _aspectRatioOptions;
-        private List<string> _colorSpaceOptions;
-
-        #endregion
-
-        #region Get/Set Options
-        public string imageFormat
-        {
-            get
-            {
-                return (string)getConfig("imageformat").value;
-            }
-            set
-            {
-                setConfig("imageformat", value, true);
-            }
-        }
         public string iso
         {
             get
@@ -372,6 +431,21 @@ namespace gphoto2_cl_binding
             set
             {
                 setConfig("iso", value.ToString(), true);
+            }
+        }
+
+        #endregion
+
+        #region  Aperature
+
+        public List<string> apertureOptions
+        {
+            get
+            {
+                if (_apertureOptions == null)
+                    _apertureOptions = getConfig("aperture").options;
+
+                return _apertureOptions;
             }
         }
 
@@ -388,6 +462,21 @@ namespace gphoto2_cl_binding
             }
         }
 
+        #endregion
+
+        #region Shutter speed
+
+        public List<string> shutterSpeedOptions
+        {
+            get
+            {
+                if (_shutterSpeedOptions == null)
+                    _shutterSpeedOptions = getConfig("shutterspeed").options;
+
+                return _shutterSpeedOptions;
+            }
+        }
+
         public string shutterSpeed
         {
             get
@@ -397,6 +486,21 @@ namespace gphoto2_cl_binding
             set
             {
                 setConfig("shutterspeed", value, true);
+            }
+        }
+
+        #endregion
+
+        #region Aspect ratio
+
+        public List<string> aspectRatioOptions
+        {
+            get
+            {
+                if (_aspectRatioOptions == null)
+                    _aspectRatioOptions = getConfig("aspectratio").options;
+
+                return _aspectRatioOptions;
             }
         }
 
@@ -412,6 +516,21 @@ namespace gphoto2_cl_binding
             }
         }
 
+        #endregion
+
+        #region Color space
+
+        public List<string> colorSpaceOptions
+        {
+            get
+            {
+                if (_imageFormatOptions == null)
+                    _imageFormatOptions = getConfig("colorspace").options;
+
+                return _imageFormatOptions;
+            }
+        }
+
         public string colorSpace
         {
             get
@@ -423,6 +542,10 @@ namespace gphoto2_cl_binding
                 setConfig("colorspace", value, true);
             }
         }
+
+        #endregion
+
+        #region Capture target
 
         public CaptureTarget captureTarget
         {
@@ -440,7 +563,16 @@ namespace gphoto2_cl_binding
             }
         }
 
-        #endregion 
+        #endregion
+
+        private List<string> _imageFormatOptions;
+        private List<string> _isoOptions;
+        private List<string> _apertureOptions;
+        private List<string> _shutterSpeedOptions;
+        private List<string> _aspectRatioOptions;
+        private List<string> _colorSpaceOptions;
+
+        #endregion
 
         #region Advanced functions
 

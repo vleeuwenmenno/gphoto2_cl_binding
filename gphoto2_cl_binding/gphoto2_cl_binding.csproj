@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageId>gphoto2_cl_binding</PackageId>
-    <Version>0.1.2</Version>
+    <Version>0.1.3</Version>
     <Authors>Menno van Leeuwen</Authors>
     <Company></Company>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
