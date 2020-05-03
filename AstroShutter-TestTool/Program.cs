@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System;
 using System.Collections.Generic;
-using AstroShutter.CliWrapper;
+using AstroShutter.CLIBindings;
 
 namespace AstroShutter_TestTool
 {

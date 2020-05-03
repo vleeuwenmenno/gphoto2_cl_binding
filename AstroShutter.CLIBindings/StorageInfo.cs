@@ -1,4 +1,4 @@
-namespace AstroShutter.CliWrapper
+namespace AstroShutter.CLIBindings
 {
     public class StorageInfo
     {

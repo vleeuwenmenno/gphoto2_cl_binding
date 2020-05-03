@@ -1,6 +1,6 @@
-# AstroShutter Cli wrapper
+# AstroShutter Cli bindings
 
-This is a wrapper for gphoto2 CLI. (WARNING This classlib depends on gphoto2 command, not libgphoto2!)
+This is a binding for gphoto2 CLI. (WARNING This classlib depends on gphoto2 command, not libgphoto2!)
 
 Currently it has been tested to work on the following platforms:
 
@@ -13,7 +13,7 @@ Platforms that are planned to be supported:
  - Windows 10 2004> using WSL2 (Waiting for proper USB support in WSL2)
 
 
-Camera's used to test this wrapper:
+Camera's used to test this binder:
 
  - Canon EOS 760D
 

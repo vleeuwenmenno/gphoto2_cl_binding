@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace AstroShutter.CliWrapper
+namespace AstroShutter.CLIBindings
 {
     public class Config
     {
