@@ -68,7 +68,7 @@ namespace AstroShutter.CliWrapper
             }
         }
         
-        public DateTime createdAt 
+        public DateTime createdAt
         { 
             get
             {

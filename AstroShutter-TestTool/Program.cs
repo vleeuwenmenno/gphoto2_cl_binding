@@ -60,12 +60,13 @@ namespace AstroShutter_TestTool
             {
                 var watch = System.Diagnostics.Stopwatch.StartNew();
 
-                List<CameraFile> files = cam.captureImage();
+                List<string> files = cam.captureImage();
                                 
                 watch.Stop();
                 var elapsedMs = watch.ElapsedMilliseconds;
-                
-                Console.WriteLine($"Capture {i+1} {files[0].filename} " + (files.Count > 1 ? files[1].filename : "") + $" took {elapsedMs}ms");
+
+                CameraFile file = CameraFile.Find(cam.storageInfo[0].root.fs[0], files[0]);
+                Console.WriteLine($"Capture {i+1} {file.filename} " + (files.Count > 1 ? file.filename : "") + $" took {elapsedMs}ms");
             }
 
             Console.WriteLine($"################### BULB 5s ###################");
@@ -76,12 +77,13 @@ namespace AstroShutter_TestTool
             {
                 var watch = System.Diagnostics.Stopwatch.StartNew();
 
-                List<CameraFile> files = cam.captureImage(5);
+                List<string> files = cam.captureImage(5);
                                 
                 watch.Stop();
                 var elapsedMs = watch.ElapsedMilliseconds;
-                
-                Console.WriteLine($"Capture {i+1} {files[0].filename} " + (files.Count > 1 ? files[1].filename : "") + $" took {elapsedMs}ms");
+
+                CameraFile file = CameraFile.Find(cam.storageInfo[0].root.fs[0], files[0]);
+                Console.WriteLine($"Capture {i+1} {file.filename} " + (files.Count > 1 ? file.filename : "") + $" took {elapsedMs}ms");
             }
 
             Console.WriteLine($"################################ TEST Capture ################################");
@@ -98,7 +100,7 @@ namespace AstroShutter_TestTool
                 Console.WriteLine($"{sinfo.label}\n\tStorage type: {sinfo.desc}\n\tRoot: {sinfo.root.path}\n\tAccess rights: {sinfo.accessRights}\n\tType: {sinfo.type}\n\tFile system type: {sinfo.fileSystemType}\n\tCapacity: {Utilities.GetKBytesReadable(sinfo.capacity)}\n\tFree space: {Utilities.GetKBytesReadable(sinfo.free)}");
             }
 
-            CameraFile fi = cam.captureImage()[0];
+            CameraFile fi = CameraFile.Find(cam.storageInfo[0].root.fs[0], cam.captureImage()[0]);
             Console.WriteLine($"Captured {fi.filename}");
 
             if (CameraFile.Exists(cam, fi.path))

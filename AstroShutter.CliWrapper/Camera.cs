@@ -72,10 +72,7 @@ namespace AstroShutter.CliWrapper
             }
         }
 
-        public bool Busy
-        {
-            get { return isBusy; }
-        }
+        public bool Busy {get {return isBusy; } set {isBusy = value;}}
 
         private bool isBusy;
 
@@ -99,7 +96,7 @@ namespace AstroShutter.CliWrapper
 
         #region Capturing
 
-        public List<CameraFile> captureImage(int bulb = 0)
+        public List<string> captureImage(int bulb = 0)
         {
             isBusy = true;
             string args = "";
@@ -114,13 +111,23 @@ namespace AstroShutter.CliWrapper
                 args += " --wait-event=\"FILEADDED\"";
 
             List<string> output = Utilities.gphoto2(args).Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
-            List<CameraFile> files = new List<CameraFile>();
+            List<string> files = new List<string>();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+            if (this.verbose)
+            {
+                Console.WriteLine("################ VERBOSE ################");
+                foreach (string line in output)
+                {
+                    Console.WriteLine(line);
+                }
+                Console.WriteLine("################ VERBOSE ################");
+            }
 
             foreach (string line in output)
             {
                 if (line.StartsWith("FILEADDED "))
-                    files.Add(CameraFile.Find(storageInfo[0].root.fs[0], line.Replace("FILEADDED ", "").Split(' ')[1] + "/" + line.Replace("FILEADDED ", "").Split(' ')[0]));
+                    files.Add(line.Replace("FILEADDED ", "").Split(' ')[1] + "/" + line.Replace("FILEADDED ", "").Split(' ')[0]);
             }
 
             isBusy = false;
@@ -223,6 +230,16 @@ namespace AstroShutter.CliWrapper
             List<string> output = Utilities.gphoto2($"--port={port} --get-file={path} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
 
+            if (this.verbose)
+            {
+                Console.WriteLine("################ VERBOSE ################");
+                foreach (string line in output)
+                {
+                    Console.WriteLine(line);
+                }
+                Console.WriteLine("################ VERBOSE ################");
+            }
+
             foreach (string line in output)
             {
                 if (line.Contains("-108: 'File not found'"))
@@ -236,6 +253,16 @@ namespace AstroShutter.CliWrapper
         {
             List<string> output = Utilities.gphoto2($"--port={port} ---get-all-files --folder={folderPath} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+            if (this.verbose)
+            {
+                Console.WriteLine("################ VERBOSE ################");
+                foreach (string line in output)
+                {
+                    Console.WriteLine(line);
+                }
+                Console.WriteLine("################ VERBOSE ################");
+            }
 
             foreach (string line in output)
             {
