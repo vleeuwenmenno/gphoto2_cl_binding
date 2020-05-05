@@ -1,3 +1,4 @@
+using System.Threading;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
@@ -12,6 +13,7 @@ namespace gphoto2_cl_binding
     {
         public string model { get; }
         public string port { get; }
+        public int claimWait = 100;
 
         /// <summary>
         /// Clears cached options of all ***Options such as isoOptions, aparatureOptions etc...
@@ -101,7 +103,7 @@ namespace gphoto2_cl_binding
         /// </summary>
         /// <param name="bulb">Bulb time, if 0 given then the current shutterspeed set on the camera will be used instead.</param>
         /// <returns></returns>
-        public List<string> captureImage(int bulb = 0)
+        public List<string> captureImage(int bulb = 0, int attempt = 0)
         {
             isBusy = true;
             string args = "";
@@ -131,6 +133,16 @@ namespace gphoto2_cl_binding
 
             foreach (string line in output)
             {
+                if (line.Contains("Could not claim the USB device"))
+                {
+                    if (attempt <= 2)
+                    {
+                        Console.WriteLine($"Failed to claim device, maybe we were too fast? Waiting for {claimWait}ms and then we'll try again... (Attempt {attempt})");
+                        Thread.Sleep(claimWait);
+                        return captureImage(bulb, attempt+1);
+                    }
+                }
+            
                 if (line.StartsWith("FILEADDED "))
                     files.Add(line.Replace("FILEADDED ", "").Split(' ')[1] + "/" + line.Replace("FILEADDED ", "").Split(' ')[0]);
             }
@@ -198,13 +210,26 @@ namespace gphoto2_cl_binding
         /// </summary>
         /// <param name="path">Folder path to count files in</param>
         /// <returns></returns>
-        public int NumFiles(string path = "")
+        public int NumFiles(string path = "", int attempt = 0)
         {
             if(path == "")
                 path = storageInfo[0].root.fs[0].path;
 
             List<string> output = Utilities.gphoto2($"--port={port} --num-files --folder={path} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+            foreach (string line in output)
+            {
+                if (line.Contains("Could not claim the USB device"))
+                {
+                    if (attempt <= 2)
+                    {
+                        Console.WriteLine($"Failed to claim device, maybe we were too fast? Waiting for {claimWait}ms and then we'll try again... (Attempt {attempt})");
+                        Thread.Sleep(claimWait);
+                        return NumFiles(path, attempt+1);
+                    }
+                }
+            }
 
             int.TryParse(output[0], out int c);
             return c;
@@ -214,10 +239,23 @@ namespace gphoto2_cl_binding
         /// Returns the index of the last file in the SD Card of the camera
         /// </summary>
         /// <returns></returns>
-        public int LastFile()
+        public int LastFile(int attempt = 0)
         {
             List<string> output = Utilities.gphoto2("--port=" + port + " --list-files").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+            foreach (string line in output)
+            {
+                if (line.Contains("Could not claim the USB device"))
+                {
+                    if (attempt <= 2)
+                    {
+                        Console.WriteLine($"Failed to claim device, maybe we were too fast? Waiting for {claimWait}ms and then we'll try again... (Attempt {attempt})");
+                        Thread.Sleep(claimWait);
+                        return LastFile(attempt+1);
+                    }
+                }
+            }
 
             output.Remove(output.Last());
             string lastFileNo = output.Last().Substring(1);
@@ -314,7 +352,7 @@ namespace gphoto2_cl_binding
 
         #region Downloading
 
-        public void DownloadFile(string localpath, string path)
+        public void DownloadFile(string localpath, string path, int attempt = 0)
         {
             List<string> output = Utilities.gphoto2($"--port={port} --get-file={path} -q", Path.GetDirectoryName(localpath)).Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
@@ -335,25 +373,50 @@ namespace gphoto2_cl_binding
                 {
                     throw new FileNotFoundException();
                 }
+         
+                if (line.Contains("Could not claim the USB device"))
+                {
+                    if (attempt <= 2)
+                    {
+                        Console.WriteLine($"Failed to claim device, maybe we were too fast? Waiting for {claimWait}ms and then we'll try again... (Attempt {attempt})");
+                        Thread.Sleep(claimWait);
+                        DownloadFile(localpath, path, attempt+1);
+                        return;
+                    }
+                }
             }
 
             // Rename downloaded file to requested name
             File.Move($"{Path.GetDirectoryName(localpath)}/{Path.GetFileName(path)}", $"{Path.GetDirectoryName(localpath)}/{Path.GetFileName(localpath)}");
         }
 
-        public void DownloadLast(int count, string localFolder, string folder = "")
+        public void DownloadLast(int count, string localFolder, string folder = "", int attempt = 0)
         {
             int numFiles = NumFiles(folder);
             if (numFiles > 0 && numFiles >= count) /// Make sure we have 1 or more and not more than all to download
             {
                 List<string> output = Utilities.gphoto2($"--port={port} --get-file {(numFiles-count)+1}-{numFiles} -q", localFolder).Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
                 output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+
+                foreach (string line in output)
+                {
+                    if (line.Contains("Could not claim the USB device"))
+                    {
+                        if (attempt <= 2)
+                        {
+                            Console.WriteLine($"Failed to claim device, maybe we were too fast? Waiting for {claimWait}ms and then we'll try again... (Attempt {attempt})");
+                            Thread.Sleep(claimWait);
+                            DownloadLast(count, localFolder, folder, attempt+1);
+                            return;
+                        }
+                    }
+                }
             }
             else if (numFiles < count)
                 throw new IndexOutOfRangeException($"Folder contains {numFiles} files, you tried to fetch {count}");
         }
 
-        public void DownloadFolder(string folderPath, string localPath)
+        public void DownloadFolder(string folderPath, string localPath, int attempt = 0)
         {
             List<string> output = Utilities.gphoto2($"--port={port} ---get-all-files --folder={folderPath} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
             output = output.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
@@ -368,8 +431,20 @@ namespace gphoto2_cl_binding
                 Console.WriteLine("################ VERBOSE ################");
             }
 
+
             foreach (string line in output)
             {
+                if (line.Contains("Could not claim the USB device"))
+                {
+                    if (attempt <= 2)
+                    {
+                        Console.WriteLine($"Failed to claim device, maybe we were too fast? Waiting for {claimWait}ms and then we'll try again... (Attempt {attempt})");
+                        Thread.Sleep(claimWait);
+                        DownloadFolder(folderPath, localPath, attempt+1);
+                        return;
+                    }
+                }
+
                 if (line.Contains("-107: 'Directory not found'"))
                 {
                     throw new DirectoryNotFoundException();
@@ -524,10 +599,10 @@ namespace gphoto2_cl_binding
         {
             get
             {
-                if (_imageFormatOptions == null)
-                    _imageFormatOptions = getConfig("colorspace").options;
+                if (_colorSpaceOptions == null)
+                    _colorSpaceOptions = getConfig("colorspace").options;
 
-                return _imageFormatOptions;
+                return _colorSpaceOptions;
             }
         }
 
@@ -581,7 +656,7 @@ namespace gphoto2_cl_binding
             return Utilities.gphoto2($"--list-config --port={port} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
         }
 
-        public bool setConfig(string name, string value, bool dontCheck = false)
+        public bool setConfig(string name, string value, bool dontCheck = false, int attempt = 0)
         {
             isBusy = true;
             List<string> output = Utilities.gphoto2($"--set-config {name}={value} --port={port} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
@@ -595,6 +670,19 @@ namespace gphoto2_cl_binding
                     Console.WriteLine(line);
                 }
                 Console.WriteLine("################ VERBOSE ################");
+            }
+
+            foreach (string line in output)
+            {                
+                if (line.Contains("Could not claim the USB device"))
+                {
+                    if (attempt <= 2)
+                    {
+                        Console.WriteLine($"Failed to claim device, maybe we were too fast? Waiting for {claimWait}ms and then we'll try again... (Attempt {attempt})");
+                        Thread.Sleep(claimWait);
+                        return setConfig(name, value, dontCheck, attempt+1);
+                    }
+                }
             }
 
             if (dontCheck)
@@ -617,7 +705,7 @@ namespace gphoto2_cl_binding
                 return true;
         }
 
-        public Config getConfig(string name)
+        public Config getConfig(string name, int attempt = 0)
         {
             isBusy = true;
             List<string> output = Utilities.gphoto2($"--get-config {name} --port={port} -q").Split(new string[] { RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\r\n" : "\n" }, StringSplitOptions.None).ToList();
@@ -642,6 +730,12 @@ namespace gphoto2_cl_binding
             {                
                 if (line.Contains("Could not claim the USB device"))
                 {
+                    if (attempt <= 2)
+                    {
+                        Console.WriteLine($"Failed to claim device, maybe we were too fast? Waiting for {claimWait}ms and then we'll try again... (Attempt {attempt})");
+                        Thread.Sleep(claimWait);
+                        return getConfig(name, attempt+1);
+                    }
                     isBusy = false;
                     return null;
                 }
