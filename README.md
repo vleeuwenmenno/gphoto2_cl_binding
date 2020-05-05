@@ -56,13 +56,18 @@ Make sure you have brew installed ([Installing brew](https://brew.sh/))
 
 ```brew install gphoto2```
 
+then download the DMG from releases page and move it to your Applications folder.
+
 ### Ubuntu/Debian
 
 ```sudo apt install gphoto2```
 
+then run the AppImage from anywhere.
+
 ### Other linux based distros
 
 Find out if your package manager has a source which can install gphoto2
+Hope your distro supports appimages, once gphoto2 command is installed you can open the AppImage
 
 ## What is currently implemented
 
